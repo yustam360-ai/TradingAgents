@@ -133,8 +133,9 @@ def seans(saat):
     return 4
 
 
-def takip(M, i, yon, e, sl, tp, bitis_ts):
-    """i. dakikadan itibaren. donus: R, cikis indeksi, sonuc"""
+def takip(M, i, yon, e, sl, tp, bitis_ts, be=0.0):
+    """i. dakikadan itibaren. donus: R, cikis indeksi, sonuc.
+    be > 0: fiyat TP mesafesinin be katina (orn. 0.70) ulasinca stop GIRISE cekilir (bir sonraki dakikadan itibaren)."""
     risk = abs(e - sl)
     j_son = int(np.searchsorted(M["ts"], bitis_ts, side="left"))
     j_son = max(j_son, i + 1)
@@ -148,6 +149,23 @@ def takip(M, i, yon, e, sl, tp, bitis_ts):
     zs, zh = np.flatnonzero(st), np.flatnonzero(hd)
     s0 = zs[0] if zs.size else None
     h0 = zh[0] if zh.size else None
+    if be > 0:
+        tetik = e + yon * be * abs(tp - e)
+        tt = (hh >= tetik) if yon > 0 else (ll <= tetik)
+        tt = tt.copy()
+        tt[0] = False
+        zt = np.flatnonzero(tt)
+        t0 = zt[0] if zt.size else None
+        if t0 is not None and (s0 is None or s0 > t0) and (h0 is None or h0 > t0):
+            gb = (ll <= e) if yon > 0 else (hh >= e)
+            zg = np.flatnonzero(gb[t0 + 1:])
+            g0 = int(t0 + 1 + zg[0]) if zg.size else None
+            if g0 is not None and (h0 is None or g0 <= h0):
+                return 0.0, i + g0, "GIRIS"
+            if h0 is not None:
+                return abs(tp - e) / risk, i + int(h0), "TP"
+            k = min(j_son, len(M["c"])) - 1
+            return yon * (M["c"][k] - e) / risk, k, "SURE"
     if s0 is not None and (h0 is None or s0 <= h0):
         return -1.0, i + int(s0), "STOP"
     if h0 is not None:
@@ -184,7 +202,7 @@ def lot_hesapla(s, bilgi, yon, e, sl):
     return zarar
 
 
-def adaylar(s, kural_idx, h1, m1, bilgi, ny_fark, bas_ts):
+def adaylar(s, kural_idx, h1, m1, bilgi, ny_fark, bas_ts, be=0.0):
     """bu sembolun kurallari icin butun sinyaller (tek islem / limit simulasyonda uygulanir)"""
     M = dict(ts=m1["time"].to_numpy(np.int64) // 60, h=m1["high"].to_numpy(float), l=m1["low"].to_numpy(float),
              c=m1["close"].to_numpy(float), o=m1["open"].to_numpy(float))
@@ -235,7 +253,7 @@ def adaylar(s, kural_idx, h1, m1, bilgi, ny_fark, bas_ts):
                 if zarar is None:
                     atlanan += 1
                     continue
-                R, j, son = takip(M, i, y, e, sl, tp, M["ts"][i] + MAX_DK)
+                R, j, son = takip(M, i, y, e, sl, tp, M["ts"][i] + MAX_DK, be)
                 sonuc.append(dict(ki=ki, yon=y, e=e, d=d, zarar=zarar, R=R, sonuc=son,
                                   giris_ts=int(M["ts"][i]), cikis_ts=int(M["ts"][j]), cikis_fiyat=float(M["c"][j]),
                                   seans=seans(int((M["t"][i] % 1440) // 60))))
@@ -266,7 +284,7 @@ def adaylar(s, kural_idx, h1, m1, bilgi, ny_fark, bas_ts):
                 if zarar is None:
                     atlanan += 1
                     break
-                R, j, son = takip(M, i, y, e, sl, tp, base + 960 + ny_fark * 60)
+                R, j, son = takip(M, i, y, e, sl, tp, base + 960 + ny_fark * 60, be)
                 if son == "SURE":
                     son = "NY16"
                 sonuc.append(dict(ki=ki, yon=y, e=e, d=abs(e - sl), zarar=zarar, R=R, sonuc=son,
@@ -279,6 +297,7 @@ def adaylar(s, kural_idx, h1, m1, bilgi, ny_fark, bas_ts):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--bas", default="2026-01-01", help="baslangic tarihi YYYY-AA-GG")
+    ap.add_argument("--be", type=float, default=0.0, help="stop girise: TP mesafesinin bu kati (0.7 = %%70), 0 = yok")
     ap.add_argument("--sunucu-ny", type=int, default=7)
     ap.add_argument("--sunucu-prag", type=int, default=1, help="sunucu saati - Prag saati")
     ap.add_argument("--cikti", default="")
@@ -316,7 +335,7 @@ def main():
         if bilgi is None or h1 is None or m1 is None or len(h1) < 300 or len(m1) < 1000:
             bulunamayan.append(s); print("[%d/%d] %s : veri yok" % (n, len(semboller), s)); continue
         ki_list = [ki for ki, k in enumerate(KURALLAR) if k[0] == s]
-        a, atl, M = adaylar(s, ki_list, h1, m1, bilgi, args.sunucu_ny, bas_ts)
+        a, atl, M = adaylar(s, ki_list, h1, m1, bilgi, args.sunucu_ny, bas_ts, args.be)
         tum += a; atlanan_top += atl; Mler[s] = M
         print("[%d/%d] %s : %d sinyal  (%.0f sn)" % (n, len(semboller), s, len(a), time.time() - t0))
     mt5.shutdown()
@@ -432,7 +451,7 @@ def main():
 
     def grup(x):
         n = len(x)
-        return pd.Series(dict(islem=n, TP=int((x["sonuc"] == "TP").sum()), STOP=int((x["sonuc"] == "STOP").sum()),
+        return pd.Series(dict(islem=n, TP=int((x["sonuc"] == "TP").sum()), STOP=int((x["sonuc"] == "STOP").sum()), GIRIS=int((x["sonuc"] == "GIRIS").sum()),
                               SURE_16=int(x["sonuc"].isin(["SURE", "NY16"]).sum()), LIMIT=int((x["sonuc"] == "LIMIT").sum()),
                               basari=round(100.0 * (x["dolar"] > 0).mean(), 1) if n else 0.0,
                               dolar=round(x["dolar"].sum(), 2)))
@@ -441,6 +460,8 @@ def main():
     m.append("=" * 118)
     m.append("EAROBOT TESTI - robot %s tarihinde 10.000 $ ile baslatilsaydi (spread yok, risk %.0f $, TP 2 kat, gunluk limit %.0f $)"
              % (tbas.strftime("%Y-%m-%d"), RISK, LIMIT))
+    m.append(("STOP GIRISE CEKME: fiyat TP mesafesinin %%%.0f'ine ulasinca stop girise cekilir" % (100 * args.be))
+             if args.be > 0 else "STOP GIRISE CEKME: yok (robotun su anki hali)")
     m.append("=" * 118)
     if len(di):
         tp, st = int((di["sonuc"] == "TP").sum()), int((di["sonuc"] == "STOP").sum())
@@ -451,7 +472,9 @@ def main():
         if son_acik:
             m.append("Test sonunda acik  : %d islem, anlik %+.2f $ (bakiyeye dahil degil)"
                      % (len(son_acik), sum(v for _, v in son_acik)))
-        m.append("Kapanan islem      : %d  (TP %d / STOP %d / 5 gun veya NY16:00 %d / LIMIT %d)" % (len(di), tp, st, su, li))
+        gi_ = int((di["sonuc"] == "GIRIS").sum())
+        m.append("Kapanan islem      : %d  (TP %d / STOP %d / GIRISTE 0 $ %d / 5 gun veya NY16:00 %d / LIMIT %d)"
+                 % (len(di), tp, st, gi_, su, li))
         m.append("Basari             : %%%.1f  (kar ile kapanan islem orani)" % (100.0 * (di["dolar"] > 0).mean()))
         m.append("Toplam kar         : %+.2f $" % di.loc[di["dolar"] > 0, "dolar"].sum())
         m.append("Toplam zarar       : %+.2f $" % di.loc[di["dolar"] < 0, "dolar"].sum())
@@ -465,17 +488,17 @@ def main():
         dm.to_csv(os.path.join(klasor, "2_mantik.csv"), **yaz)
         m.append("")
         m.append("-- SEMBOL / MANTIK BAZLI --")
-        m.append("%-11s %-46s %5s %4s %4s %5s %5s %7s %10s" % ("SEMBOL", "MANTIK", "ISLEM", "TP", "STOP", "SURE", "LIMIT",
+        m.append("%-11s %-46s %5s %4s %4s %5s %5s %5s %7s %10s" % ("SEMBOL", "MANTIK", "ISLEM", "TP", "STOP", "GIRIS", "SURE", "LIMIT",
                                                                "BASARI", "DOLAR"))
         for _, r in dm.iterrows():
-            m.append("%-11s %-46s %5d %4d %4d %5d %5d %%%6.1f %+10.2f" % (r["sembol"], r["mantik"][:46], r["islem"], r["TP"],
-                                                                        r["STOP"], r["SURE_16"], r["LIMIT"], r["basari"],
+            m.append("%-11s %-46s %5d %4d %4d %5d %5d %5d %%%6.1f %+10.2f" % (r["sembol"], r["mantik"][:46], r["islem"], r["TP"],
+                                                                        r["STOP"], r["GIRIS"], r["SURE_16"], r["LIMIT"], r["basari"],
                                                                         r["dolar"]))
         ds = di.groupby(["seans", "yon"]).apply(grup).reset_index()
         ds.to_csv(os.path.join(klasor, "3_seans.csv"), **yaz)
         m.append("")
         m.append("-- SEANS BAZLI (giris saatine gore, NY) --")
-        m.append("%-24s %-4s %5s %4s %4s %5s %5s %7s %10s" % ("SEANS", "YON", "ISLEM", "TP", "STOP", "SURE", "LIMIT",
+        m.append("%-24s %-4s %5s %4s %4s %5s %5s %5s %7s %10s" % ("SEANS", "YON", "ISLEM", "TP", "STOP", "GIRIS", "SURE", "LIMIT",
                                                               "BASARI", "DOLAR"))
         for se in SEANSLAR:
             x = di[di["seans"] == se]
@@ -485,11 +508,11 @@ def main():
                 y = x[x["yon"] == yon]
                 if len(y):
                     r = grup(y)
-                    m.append("%-24s %-4s %5d %4d %4d %5d %5d %%%6.1f %+10.2f" % (se, yon, r["islem"], r["TP"], r["STOP"],
+                    m.append("%-24s %-4s %5d %4d %4d %5d %5d %5d %%%6.1f %+10.2f" % (se, yon, r["islem"], r["TP"], r["STOP"], r["GIRIS"],
                                                                                r["SURE_16"], r["LIMIT"], r["basari"],
                                                                                r["dolar"]))
             r = grup(x)
-            m.append("%-24s %-4s %5d %4d %4d %5d %5d %%%6.1f %+10.2f" % (se, "TOP", r["islem"], r["TP"], r["STOP"],
+            m.append("%-24s %-4s %5d %4d %4d %5d %5d %5d %%%6.1f %+10.2f" % (se, "TOP", r["islem"], r["TP"], r["STOP"], r["GIRIS"],
                                                                        r["SURE_16"], r["LIMIT"], r["basari"], r["dolar"]))
         di["ay"] = pd.to_datetime(di["cikis"]).dt.strftime("%Y-%m")
         da = di.groupby("ay").apply(grup).reset_index()
@@ -500,10 +523,10 @@ def main():
         da.to_csv(os.path.join(klasor, "5_aylik.csv"), **yaz)
         m.append("")
         m.append("-- AYLIK (islemin kapandigi aya gore) --")
-        m.append("%-8s %5s %4s %4s %5s %5s %7s %10s %13s %6s" % ("AY", "ISLEM", "TP", "STOP", "SURE", "LIMIT", "BASARI",
+        m.append("%-8s %5s %4s %4s %5s %5s %5s %7s %10s %13s %6s" % ("AY", "ISLEM", "TP", "STOP", "GIRIS", "SURE", "LIMIT", "BASARI",
                                                                 "DOLAR", "AY SONU BAKIYE", "LIM.GUN"))
         for _, r in da.iterrows():
-            m.append("%-8s %5d %4d %4d %5d %5d %%%6.1f %+10.2f %13.2f %6d" % (r["ay"], r["islem"], r["TP"], r["STOP"],
+            m.append("%-8s %5d %4d %4d %5d %5d %5d %%%6.1f %+10.2f %13.2f %6d" % (r["ay"], r["islem"], r["TP"], r["STOP"], r["GIRIS"],
                                                                             r["SURE_16"], r["LIMIT"], r["basari"], r["dolar"],
                                                                             r["ay_sonu_bakiye"], r["limit_dolan_gun"]))
         m.append("")
@@ -517,7 +540,7 @@ def main():
         m.append("")
         m.append("Bulunamayan / verisi olmayan sembol: " + ", ".join(bulunamayan))
     m.append("")
-    m.append("SONUC: TP = hedef, STOP = stop, SURE = 5 gun doldu, NY16 = altin 16:00 kapanisi, LIMIT = gunluk limit kapatti.")
+    m.append("SONUC: TP = hedef, STOP = stop, GIRIS = stop girise cekildikten sonra 0 $ ile kapandi, SURE = 5 gun doldu, NY16 = altin 16:00 kapanisi, LIMIT = gunluk limit kapatti.")
     m.append("Not: Kurallar Mayis-Kasim 2026 verisinde secildi. Ocak-Nisan 2026 kurallarin HIC gormedigi donem;")
     m.append("     asil kanit o aylarin sonucudur.")
     m.append("")
