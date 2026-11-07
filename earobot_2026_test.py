@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-EAROBOT 3 AY TESTI - robot 3 ay once calistirilsaydi ne olurdu
-==============================================================
-Python 3.8:   py -3.8 earobot_3ay_test.py
+EAROBOT 2026 TESTI - robot 1 Ocak 2026'da 10.000 $ ile calistirilsaydi ne olurdu
+================================================================================
+Python 3.8:   py -3.8 earobot_2026_test.py          (baska baslangic: --bas 2025-11-01)
 Gerekli:      py -3.8 -m pip install MetaTrader5 pandas numpy
 
 MT5'e baglanir, SADECE gecmis veri okur, ISLEM ACMAZ.  SPREAD / MAKAS / KOMISYON YOK.
@@ -28,6 +28,7 @@ CIKTI (earobot_test_<tarih>/):
   2_mantik.csv    sembol / mantik bazli
   3_seans.csv     seans bazli (alis / satis)
   4_gunluk.csv    gun gun
+  5_aylik.csv     ay ay (dolar ve ay sonu bakiyesi)
 """
 from __future__ import print_function
 
@@ -277,7 +278,7 @@ def adaylar(s, kural_idx, h1, m1, bilgi, ny_fark, bas_ts):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--ay", type=float, default=3.0)
+    ap.add_argument("--bas", default="2026-01-01", help="baslangic tarihi YYYY-AA-GG")
     ap.add_argument("--sunucu-ny", type=int, default=7)
     ap.add_argument("--sunucu-prag", type=int, default=1, help="sunucu saati - Prag saati")
     ap.add_argument("--cikti", default="")
@@ -291,7 +292,7 @@ def main():
 
     simdi = datetime.now(timezone.utc).replace(tzinfo=None)
     bit = simdi + timedelta(days=1)
-    tbas = simdi - timedelta(days=30.4 * args.ay)
+    tbas = datetime.strptime(args.bas, "%Y-%m-%d")
     # sunucu saatine gore baslangic (sunucu = UTC + (NY farki 7 - NY'nin UTC farki 5) ~ UTC+2)
     bas_ts = int((tbas - datetime(1970, 1, 1)).total_seconds() // 60) + 2 * 60
     semboller = []
@@ -325,7 +326,7 @@ def main():
     # ---------- ortak zaman cizgisi (sunucu dakikasi) ----------
     G = np.unique(np.concatenate([M["ts"][M["ts"] >= bas_ts] for M in Mler.values()]))
     sem_no = {s: i for i, s in enumerate(Mler)}
-    CG = np.zeros((len(Mler), len(G)))
+    CG = np.zeros((len(Mler), len(G)), dtype=np.float32)
     for s, i in sem_no.items():
         M = Mler[s]
         ix = np.searchsorted(M["ts"], G, side="right") - 1
@@ -438,7 +439,7 @@ def main():
 
     m = []
     m.append("=" * 118)
-    m.append("EAROBOT 3 AY TESTI - robot %s tarihinde baslatilsaydi (spread yok, risk %.0f $, TP 2 kat, gunluk limit %.0f $)"
+    m.append("EAROBOT TESTI - robot %s tarihinde 10.000 $ ile baslatilsaydi (spread yok, risk %.0f $, TP 2 kat, gunluk limit %.0f $)"
              % (tbas.strftime("%Y-%m-%d"), RISK, LIMIT))
     m.append("=" * 118)
     if len(di):
@@ -490,6 +491,21 @@ def main():
             r = grup(x)
             m.append("%-24s %-4s %5d %4d %4d %5d %5d %%%6.1f %+10.2f" % (se, "TOP", r["islem"], r["TP"], r["STOP"],
                                                                        r["SURE_16"], r["LIMIT"], r["basari"], r["dolar"]))
+        di["ay"] = pd.to_datetime(di["cikis"]).dt.strftime("%Y-%m")
+        da = di.groupby("ay").apply(grup).reset_index()
+        da["ay_sonu_bakiye"] = (BASLANGIC + da["dolar"].cumsum()).round(2)
+        dg["ay"] = dg["prag_gunu"].str[:7]
+        lg = dg[dg["limit_doldu"] == "EVET"].groupby("ay").size()
+        da["limit_dolan_gun"] = da["ay"].map(lg).fillna(0).astype(int)
+        da.to_csv(os.path.join(klasor, "5_aylik.csv"), **yaz)
+        m.append("")
+        m.append("-- AYLIK (islemin kapandigi aya gore) --")
+        m.append("%-8s %5s %4s %4s %5s %5s %7s %10s %13s %6s" % ("AY", "ISLEM", "TP", "STOP", "SURE", "LIMIT", "BASARI",
+                                                                "DOLAR", "AY SONU BAKIYE", "LIM.GUN"))
+        for _, r in da.iterrows():
+            m.append("%-8s %5d %4d %4d %5d %5d %%%6.1f %+10.2f %13.2f %6d" % (r["ay"], r["islem"], r["TP"], r["STOP"],
+                                                                            r["SURE_16"], r["LIMIT"], r["basari"], r["dolar"],
+                                                                            r["ay_sonu_bakiye"], r["limit_dolan_gun"]))
         m.append("")
         m.append("-- GUNLUK (Prag gunu) --")
         m.append("%-10s %5s %10s %11s %s" % ("GUN", "ISLEM", "DOLAR", "BAKIYE", "LIMIT"))
@@ -502,7 +518,11 @@ def main():
         m.append("Bulunamayan / verisi olmayan sembol: " + ", ".join(bulunamayan))
     m.append("")
     m.append("SONUC: TP = hedef, STOP = stop, SURE = 5 gun doldu, NY16 = altin 16:00 kapanisi, LIMIT = gunluk limit kapatti.")
-    m.append("Not: Bu 3 ay, kurallarin secildigi 6 ayin icinde; gercek performans canli sonuclarla gorulur.")
+    m.append("Not: Kurallar Mayis-Kasim 2026 verisinde secildi. Ocak-Nisan 2026 kurallarin HIC gormedigi donem;")
+    m.append("     asil kanit o aylarin sonucudur.")
+    m.append("")
+    m.append("SONUC: 10.000 $ ile %s tarihinde baslasaydi bugun bakiye %.2f $ olurdu (net %+.2f $)."
+             % (tbas.strftime("%d.%m.%Y"), bakiye, bakiye - BASLANGIC))
     ms = "\n".join(m)
     print("\n" + ms)
     with open(os.path.join(klasor, "0_OZET.txt"), "w", encoding="utf-8") as fh:
