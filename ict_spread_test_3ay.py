@@ -153,6 +153,7 @@ def sehir_utc(sehir, d):
 
 
 SUNUCU_NY = 7
+SPREAD_DAHIL = True     # False: fiyat hareketinde spread yok, 6 $ kurali yok (stop payi olarak makas yine eklenir)
 
 
 def sunucu_utc(d):
@@ -460,7 +461,7 @@ def etiketle(kur, Tm, F, X, Y, Cx, SP, z_bit, vpl, bilgi):
                 lot = bilgi.volume_min
             lot = min(lot, vmax)
             zarar = lot * rpl
-            maliyet = sp * lot * vpl
+            maliyet = sp * lot * vpl if SPREAD_DAHIL else 0.0
             for hi, hk in enumerate(HEDEFLER):
                 k = (gi * len(STOPLAR) + si) * len(HEDEFLER) + hi
                 rk[k] = zarar
@@ -510,12 +511,13 @@ def sembol_isle(s, m1, bilgi, vpl, bas_gun):
     h4_t, h4_tr = yapi_trend(T, O, H, L, C, 240)
     gorunum = {}
     for yon in (-1, 1):
+        SPx = SP if SPREAD_DAHIL else 0.0 * SP
         if yon < 0:
             Hm, Lm, Cm, Om = H, L, C, O
-            F, X, Y, Cx = H, H + SP, L + SP, C + SP
+            F, X, Y, Cx = H, H + SPx, L + SPx, C + SPx
         else:
             Hm, Lm, Cm, Om = -L, -H, -C, -O
-            F, X, Y, Cx = -(L + SP), -L, -H, -C
+            F, X, Y, Cx = -(L + SPx), -L, -H, -C
         tf = {}
         for K in TFLER:
             bt, bo, bh, bl, bc = mumlar(T, Om, Hm, Lm, Cm, K)
