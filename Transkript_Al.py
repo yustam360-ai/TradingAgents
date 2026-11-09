@@ -83,12 +83,27 @@ def html_videolar(link):
         veri = json.loads(m.group(1))
         rend = []
         _ara(veri, "playlistVideoRenderer", rend)
+        _ara(veri, "playlistPanelVideoRenderer", rend)
         for r in rend:
             vid = r.get("videoId")
             runs = (r.get("title") or {}).get("runs") or [{}]
             ad = runs[0].get("text") or (r.get("title") or {}).get("simpleText") or vid
             if vid and vid not in [x[0] for x in liste]:
                 liste.append((vid, ad))
+        if not liste:                                   # yeni sayfa duzeni: lockupViewModel
+            lk = []
+            _ara(veri, "lockupViewModel", lk)
+            for r in lk:
+                vid = r.get("contentId")
+                bas = []
+                _ara(r, "title", bas)
+                ad = vid
+                for b in bas:
+                    if isinstance(b, dict) and b.get("content"):
+                        ad = b["content"]
+                        break
+                if vid and len(vid) == 11 and vid not in [x[0] for x in liste]:
+                    liste.append((vid, ad))
     if not liste:
         v = re.search(r"(?:v=|youtu\.be/|shorts/)([A-Za-z0-9_-]{11})", link)
         if v:
@@ -97,12 +112,18 @@ def html_videolar(link):
 
 
 def videolar(link):
-    if yt_dlp is None:
-        return html_videolar(link)
-    try:
-        return _ytdlp_videolar(link)
-    except Exception:
-        return html_videolar(link)
+    lid = re.search(r"[?&]list=([A-Za-z0-9_-]+)", link)
+    if lid:                                             # video+liste linki -> sadece liste linki
+        link = "https://www.youtube.com/playlist?list=" + lid.group(1)
+    sonuc = None
+    if yt_dlp is not None:
+        try:
+            sonuc = _ytdlp_videolar(link)
+        except Exception:
+            sonuc = None
+    if not sonuc or not sonuc[1]:
+        sonuc = html_videolar(link)
+    return sonuc
 
 
 def _ytdlp_videolar(link):
