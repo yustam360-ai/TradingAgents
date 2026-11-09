@@ -15,6 +15,8 @@ ya da linki dogrudan verin:
 - Dil: videoda KONUSULAN dil kullanilir (Ingilizce video -> Ingilizce, Turkce video -> Turkce). Ceviri yapilmaz.
 - Her satirin basinda videodaki zaman yazar: [12:34]
 - Dosya: Masaustu / <oynatma listesi adi>.txt  (Bolum 1, Bolum 2 ... sirasiyla)
+- "Kacinci videodan baslasin?" sorusu: yarim kalan listeye kaldigi yerden devam etmek icin.
+- YouTube engellerse 30 / 60 / 90 sn bekleyip tekrar dener; alinamazsa sebebini yazar.
 """
 from __future__ import print_function
 
@@ -190,25 +192,45 @@ def main():
         yol = os.path.join(masaustu(), "%s (%d).txt" % (temiz_ad(baslik), k))
         k += 1
     print("%d video bulundu: %s" % (len(liste), baslik))
+    bas_no = 1
+    if len(liste) > 1:
+        try:
+            g = input("Kacinci videodan baslasin? (bos birakip Enter = 1): ").strip()
+            bas_no = max(1, min(len(liste), int(g))) if g else 1
+        except (EOFError, ValueError):
+            bas_no = 1
+    if bas_no > 1:
+        yol = yol[:-4] + " (%d-%d).txt" % (bas_no, len(liste))
+        k = 2
+        while os.path.exists(yol):
+            yol = yol[:-4] + " %d.txt" % k
+            k += 1
     yok = []
     with open(yol, "w", encoding="utf-8") as f:
         f.write("%s\n%s\nToplam %d video\n\n" % (baslik, link, len(liste)))
         for n, (vid, ad) in enumerate(liste, 1):
+            if n < bas_no:
+                continue
             sonuc = None
-            for deneme in range(3):
+            for deneme in range(4):
                 try:
                     sonuc = transkript(vid)
                     break
                 except Exception as hata:
-                    sonuc = ("HATA", str(hata).splitlines()[0][:150] if str(hata) else type(hata).__name__)
-                    time.sleep(2 + 3 * deneme)
+                    satirlar_h = [x.strip() for x in str(hata).splitlines() if x.strip()]
+                    neden = type(hata).__name__ + (": " + " | ".join(satirlar_h[:3])[:300] if satirlar_h else "")
+                    sonuc = ("HATA", neden)
+                    if deneme < 3:
+                        bekle = 30 * (deneme + 1)
+                        print("   [%d] hata: %s -> %d sn bekleyip tekrar denenecek" % (n, type(hata).__name__, bekle))
+                        time.sleep(bekle)
             f.write("=" * 100 + "\n")
             f.write("BOLUM %d - %s\nhttps://www.youtube.com/watch?v=%s\n" % (n, ad, vid))
             if sonuc is None or sonuc[0] is None or sonuc[0] == "HATA" or not sonuc[1]:
                 neden = sonuc[1] if sonuc and sonuc[0] == "HATA" else "transkript yok"
                 f.write("(TRANSKRIPT ALINAMADI: %s)\n\n" % neden)
                 yok.append("Bolum %d - %s (%s)" % (n, ad, neden))
-                print("[%d/%d] %s : ALINAMADI" % (n, len(liste), ad[:60]))
+                print("[%d/%d] %s : ALINAMADI -> %s" % (n, len(liste), ad[:60], neden[:120]))
                 continue
             dil, satirlar = sonuc
             f.write("Dil: %s\n" % dil)
@@ -220,7 +242,7 @@ def main():
             f.write("\n")
             f.flush()
             print("[%d/%d] %s : tamam (%s, %d satir)" % (n, len(liste), ad[:60], dil, len(satirlar)))
-            time.sleep(0.5)
+            time.sleep(3)
         if yok:
             f.write("=" * 100 + "\nTRANSKRIPTI ALINAMAYAN VIDEOLAR:\n" + "\n".join(yok) + "\n")
     print("\nBitti. Dosya: %s" % yol)
