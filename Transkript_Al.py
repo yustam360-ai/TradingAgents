@@ -186,7 +186,25 @@ def _ydl_kur():
     _YDL["hazir"] = True
     if yt_dlp is None:
         return None
-    temel = {"quiet": True, "no_warnings": True, "skip_download": True}
+    class _Sessiz(object):
+        def debug(self, m): pass
+        def info(self, m): pass
+        def warning(self, m): pass
+        def error(self, m): pass
+    temel = {"quiet": True, "no_warnings": True, "skip_download": True, "logger": _Sessiz(),
+             "ignore_no_formats_error": True}        # video formati gerekmez, sadece altyazi
+    # 1) masaustunde cookies.txt varsa onu kullan (tarayici eklentisiyle disa aktarilmis)
+    for ad in ("cookies.txt", "www.youtube.com_cookies.txt", "youtube.com_cookies.txt"):
+        dosya = os.path.join(masaustu(), ad)
+        if os.path.exists(dosya):
+            try:
+                ydl = yt_dlp.YoutubeDL(dict(temel, cookiefile=dosya))
+                _YDL["ydl"], _YDL["kaynak"] = ydl, ad
+                print("   yedek yol hazir: yt-dlp + masaustu %s" % ad)
+                return ydl
+            except Exception as h:
+                print("   %s okunamadi: %s" % (ad, h))
+    # 2) tarayicidan dogrudan (tarayici KAPALI olmali)
     for tarayici in ("chrome", "edge", "firefox", "brave", "opera"):
         try:
             ydl = yt_dlp.YoutubeDL(dict(temel, cookiesfrombrowser=(tarayici,)))
