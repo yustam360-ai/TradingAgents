@@ -16,7 +16,9 @@ ya da linki dogrudan verin:
 - Her satirin basinda videodaki zaman yazar: [12:34]
 - Dosya: Masaustu / <oynatma listesi adi>.txt  (Bolum 1, Bolum 2 ... sirasiyla)
 - "Kacinci videodan baslasin?" sorusu: yarim kalan listeye kaldigi yerden devam etmek icin.
-- YouTube engellerse 30 / 60 / 90 sn bekleyip tekrar dener; alinamazsa sebebini yazar.
+- YouTube IP engeli koyarsa yedek yola gecer: yt-dlp + bilgisayardaki tarayicinin (Chrome / Edge / Firefox)
+  YouTube cerezleri (tarayicida YouTube'a giris yapmis olmak yeter; cerezler bilgisayardan disari gitmez).
+- Yine olmazsa 30 / 60 sn bekleyip tekrar dener; alinamazsa sebebini yazar.
 """
 from __future__ import print_function
 
@@ -173,6 +175,79 @@ def transkript(vid):
     return secilen.language_code, satir
 
 
+# ----------------------------------------------------------------- yedek yol: yt-dlp + tarayici cerezleri
+_YDL = {"hazir": False, "ydl": None, "kaynak": ""}
+
+
+def _ydl_kur():
+    """once tarayici cerezleriyle (YouTube'a giris yapmis kullanici gibi), olmazsa cerezsiz"""
+    if _YDL["hazir"]:
+        return _YDL["ydl"]
+    _YDL["hazir"] = True
+    if yt_dlp is None:
+        return None
+    temel = {"quiet": True, "no_warnings": True, "skip_download": True}
+    for tarayici in ("chrome", "edge", "firefox", "brave", "opera"):
+        try:
+            ydl = yt_dlp.YoutubeDL(dict(temel, cookiesfrombrowser=(tarayici,)))
+            if len(list(ydl.cookiejar)) == 0:               # cerezler burada yuklenir; hata varsa burada cikar
+                continue
+            _YDL["ydl"], _YDL["kaynak"] = ydl, tarayici + " cerezleri"
+            print("   yedek yol hazir: yt-dlp + %s" % _YDL["kaynak"])
+            return ydl
+        except Exception:
+            continue
+    try:
+        _YDL["ydl"], _YDL["kaynak"] = yt_dlp.YoutubeDL(temel), "cerezsiz"
+        print("   yedek yol hazir: yt-dlp (tarayici cerezi okunamadi, cerezsiz)")
+    except Exception:
+        _YDL["ydl"] = None
+    return _YDL["ydl"]
+
+
+def ytdlp_transkript(vid):
+    """yt-dlp ile elle / otomatik altyazi (json3): (dil, [(sn, metin)])"""
+    ydl = _ydl_kur()
+    if ydl is None:
+        raise RuntimeError("yt-dlp yok")
+    info = ydl.extract_info("https://www.youtube.com/watch?v=" + vid, download=False)
+    elle = info.get("subtitles") or {}
+    oto = info.get("automatic_captions") or {}
+    dil = info.get("language") or ""
+    orig = [k for k in oto if k.endswith("-orig")]
+    if not dil and orig:
+        dil = orig[0][:-5]
+    if not dil:
+        for d in ("tr", "en"):
+            if d in elle or d in oto:
+                dil = d
+                break
+    adaylar = []
+    for oncelik, kaynak in ((0, elle), (1, oto)):
+        for k in kaynak:
+            if k.split("-")[0] == dil.split("-")[0]:
+                adaylar.append((oncelik, 0 if k.endswith("-orig") else 1, k, kaynak[k]))
+    if not adaylar:
+        raise RuntimeError("altyazi yok (dil: %s)" % (dil or "?"))
+    adaylar.sort(key=lambda x: (x[0], x[1]))
+    url = None
+    for b in adaylar[0][3]:
+        if b.get("ext") == "json3":
+            url = b["url"]
+            break
+    if url is None:
+        raise RuntimeError("json3 altyazi yok")
+    veri = json.loads(ydl.urlopen(url).read().decode("utf-8", "ignore"))
+    satir = []
+    for ev in veri.get("events") or []:
+        metin = " ".join("".join(sg.get("utf8", "") for sg in (ev.get("segs") or [])).split())
+        if metin:
+            satir.append((ev.get("tStartMs", 0) / 1000.0, metin))
+    if not satir:
+        raise RuntimeError("altyazi bos")
+    return dil, satir
+
+
 def main():
     link = sys.argv[1] if len(sys.argv) > 1 else ""
     if not link:
@@ -206,24 +281,37 @@ def main():
             yol = yol[:-4] + " %d.txt" % k
             k += 1
     yok = []
+    engelli = False
     with open(yol, "w", encoding="utf-8") as f:
         f.write("%s\n%s\nToplam %d video\n\n" % (baslik, link, len(liste)))
         for n, (vid, ad) in enumerate(liste, 1):
             if n < bas_no:
                 continue
             sonuc = None
-            for deneme in range(4):
+            for deneme in range(3):
+                if not engelli:
+                    try:
+                        sonuc = transkript(vid)
+                        break
+                    except Exception as hata:
+                        satirlar_h = [x.strip() for x in str(hata).splitlines() if x.strip()]
+                        neden = type(hata).__name__ + (": " + " | ".join(satirlar_h[:3])[:300] if satirlar_h else "")
+                        sonuc = ("HATA", neden)
+                        if "Block" in type(hata).__name__ or "blocking" in str(hata):
+                            engelli = True
+                            print("   YouTube IP engeli -> yedek yola (yt-dlp + tarayici cerezleri) geciliyor")
                 try:
-                    sonuc = transkript(vid)
+                    sonuc = ytdlp_transkript(vid)
                     break
-                except Exception as hata:
-                    satirlar_h = [x.strip() for x in str(hata).splitlines() if x.strip()]
-                    neden = type(hata).__name__ + (": " + " | ".join(satirlar_h[:3])[:300] if satirlar_h else "")
-                    sonuc = ("HATA", neden)
-                    if deneme < 3:
-                        bekle = 30 * (deneme + 1)
-                        print("   [%d] hata: %s -> %d sn bekleyip tekrar denenecek" % (n, type(hata).__name__, bekle))
-                        time.sleep(bekle)
+                except Exception as hata2:
+                    satirlar_h = [x.strip() for x in str(hata2).splitlines() if x.strip()]
+                    onceki = sonuc[1] + " || " if (sonuc and sonuc[0] == "HATA") else ""
+                    sonuc = ("HATA", onceki + "yedek yol: " + type(hata2).__name__ +
+                             (": " + " | ".join(satirlar_h[:2])[:250] if satirlar_h else ""))
+                if deneme < 2:
+                    bekle = 30 * (deneme + 1)
+                    print("   [%d] alinamadi -> %d sn bekleyip tekrar denenecek" % (n, bekle))
+                    time.sleep(bekle)
             f.write("=" * 100 + "\n")
             f.write("BOLUM %d - %s\nhttps://www.youtube.com/watch?v=%s\n" % (n, ad, vid))
             if sonuc is None or sonuc[0] is None or sonuc[0] == "HATA" or not sonuc[1]:
