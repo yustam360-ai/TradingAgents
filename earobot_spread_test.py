@@ -6,8 +6,9 @@ Python 3.8:   py -3.8 earobot_spread_test.py          (baska baslangic: --bas 20
 Gerekli:      py -3.8 -m pip install MetaTrader5 pandas numpy
 
 MT5'e baglanir, SADECE gecmis veri okur, ISLEM ACMAZ.
-EAROBOT.mq5 kurallari; HARIC listesindeki 8 sembol CIKARILDI:
-  AAPL, JNJ, XAUUSD (Asya kirilimi), RACE, CSCO, BABA, FRA40.cash, EU50.cash.
+EAROBOT.mq5 kurallari; HARIC listesindeki 12 sembol CIKARILDI:
+  AAPL, JNJ, XAUUSD (Asya kirilimi), RACE, CSCO, BABA, FRA40.cash, EU50.cash,
+  USDILS (2 kural), USDSGD, EURCZK (3 kural), SOYBEAN.c.
   - 1 saatlik kurallar: mum kapaninca sart, bir sonraki mumun acilisinda PIYASA emriyle giris.
     Stop = stop katsayisi x ATR(14), TP = stopun 2 kati.  5 gunde sonuclanmazsa kapanir (SURE).
   - LOT: stop olursa 15 $ zarar.  En kucuk lottan kucukse en kucuk lot; en kucuk lotta zarar 30 $'i
@@ -86,7 +87,8 @@ for _s, _h, _y, _f, _k in _EMA:
 
 
 SPREAD_SINIR = 6.0
-HARIC = {"AAPL", "JNJ", "XAUUSD", "RACE", "CSCO", "BABA", "FRA40.cash", "EU50.cash"}
+HARIC = {"AAPL", "JNJ", "XAUUSD", "RACE", "CSCO", "BABA", "FRA40.cash", "EU50.cash",
+         "USDILS", "USDSGD", "EURCZK", "SOYBEAN.c"}
 KURALLAR = [k for k in KURALLAR if k[0] not in HARIC]
 
 
@@ -437,7 +439,7 @@ def main():
     m.append("=" * 120)
     m.append("EAROBOT SPREAD TESTI - %s -> bugun, 10.000 $, risk %.0f $, TP 2 kat, gunluk limit %.0f $, spread kurali %.0f $"
              % (tbas.strftime("%Y-%m-%d"), RISK, LIMIT, SPREAD_SINIR))
-    m.append("Haric (cikarilan 8): " + ", ".join(sorted(HARIC)))
+    m.append("Haric (cikarilan %d): " % len(HARIC) + "" + ", ".join(sorted(HARIC)))
     m.append("=" * 120)
     m += ozet_satirlari("SPREAD DAHIL (robotun gercek hali)", di, dg, bak, dd, n_acik, acik_para, atl[True][0], atl[True][1])
     m.append("")
