@@ -27,7 +27,7 @@ CALISMA: her metin icin -> her sahne seslendirilir (Microsoft yapay zeka sesi, u
          sahneler birlestirilir -> cikti\\<dosya_adi>.mp4
          Videosu zaten olan metin atlanir (program tekrar calistirilinca kaldigi yerden devam eder).
 
-AYARLAR: --ses en-US-AndrewNeural (varsayilan) | en-US-GuyNeural | en-US-ChristopherNeural ...
+AYARLAR: --ses en-US-GuyNeural (varsayilan) | en-US-ChristopherNeural ...
          --hiz +0%  (ornek: +5% daha hizli, -5% daha yavas)
          --kalite 1080 | 720   (eski bilgisayarda 720 daha hizli)
          --altyazi   (videoya altyazi yakar; varsayilan YOK, YouTube kendi altyazisini olusturur)
@@ -428,7 +428,7 @@ def video_yap(px, metin_yol, cikti, onbellek, ses, hiz, W, H, altyazi):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--ses", default="en-US-AndrewNeural")
+    ap.add_argument("--ses", default="en-US-GuyNeural")
     ap.add_argument("--hiz", default="+0%")
     ap.add_argument("--kalite", type=int, default=1080, choices=(720, 1080))
     ap.add_argument("--altyazi", action="store_true")
