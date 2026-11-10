@@ -1,0 +1,48 @@
+TITLE: How Nvidia Became One of the Most Valuable Companies in the World
+DESCRIPTION: Nvidia started in 1993 with three engineers and a plan made at a roadside diner. It almost went bankrupt in its early years. Three decades later, it became one of the most valuable companies on Earth. In this video we tell the story: the near-death experience, the invention of the modern GPU, the bet on CUDA that Wall Street didn't understand, the deep learning breakthrough, and the AI boom that changed everything.\n\nThis video is for educational purposes only and is not financial advice.
+TAGS: nvidia, nvidia story, jensen huang, gpu, artificial intelligence, ai chips, cuda, tech history, stock market, business documentary
+
+[VISUAL: computer chip; circuit board; technology]
+Today, Nvidia's chips power the artificial intelligence revolution. Its graphics processors train the AI models that write text, create images, and answer questions for hundreds of millions of people. Its market value has climbed into the trillions of dollars, putting it among the most valuable companies in the world. But for most of its history, Nvidia was just a company that made graphics cards for video games. And in its early years, it came very close to disappearing completely. This is the story of how Nvidia became a giant.
+
+[VISUAL: diner; restaurant; coffee]
+The story begins in nineteen ninety-three, in a Denny's restaurant in San Jose, California. Three engineers, Jensen Huang, Chris Malachowsky, and Curtis Priem, met there to talk about an idea. Personal computers were becoming more powerful, and video games were becoming more realistic. Drawing three-dimensional graphics required a huge number of calculations, and the main processor in a computer wasn't designed for that kind of work. The three founders believed that a dedicated chip for graphics could become an enormous business. That year, they founded Nvidia, with Jensen Huang as chief executive, a role he has held ever since.
+
+[VISUAL: old computer; retro technology; video game]
+The beginning was rough. Nvidia's first product, a chip called the NV1, launched in nineteen ninety-five. It used an unusual technical approach that didn't match the direction the rest of the industry was heading, and it didn't sell well. Nvidia was also working on a chip for Sega's next game console, but the design had the same fundamental problem. The company was running out of money, and at one point it had to lay off a large part of its staff. Jensen Huang has said that Nvidia was, at that time, only about thirty days away from going out of business.
+
+[VISUAL: engineer; laboratory; working]
+Nvidia survived by making a bold decision. It admitted its technology was going in the wrong direction and changed course completely. Sega still agreed to pay the company, which gave Nvidia just enough money to keep going. The team then built a new chip in record time, the RIVA one hundred twenty-eight, released in nineteen ninety-seven. It was fast, it supported the industry standards, and it sold over a million units within a few months. Nvidia was saved.
+
+[VISUAL: gaming; computer games; esports]
+Two years later, in nineteen ninety-nine, Nvidia went public on the stock market. That same year, it launched the GeForce two hundred fifty-six, which it marketed as "the world's first GPU," short for graphics processing unit. The idea was that the graphics chip would now handle much more of the work of creating a 3D image on its own. The GeForce brand became one of the best-known names in gaming, and Nvidia grew into a leader of the graphics market, competing fiercely with rivals like ATI, which was later bought by AMD.
+
+[VISUAL: data; numbers; matrix]
+But here's the important part. To draw realistic graphics, a GPU has to perform thousands of simple calculations at the same time, one for each pixel on the screen. A normal processor is like a small team of brilliant experts, each solving one complex problem after another. A GPU is more like an army of thousands of workers, each doing a simple task in parallel. Some scientists began to notice that this kind of parallel computing could be useful for much more than games, for example physics simulations, medical imaging, and financial modeling.
+
+[VISUAL: programming; code; developer]
+In two thousand six, Nvidia made what may be the most important decision in its history. It released CUDA, a software platform that allowed programmers to use Nvidia's GPUs for general computing, not just graphics. This was expensive. Nvidia had to build CUDA support into its chips and spend years developing software tools, documentation, and libraries, often for customers who didn't yet exist. For a long time, many on Wall Street saw it as a costly distraction from the gaming business. But Jensen Huang kept investing in it, year after year.
+
+[VISUAL: artificial intelligence; neural network; robot]
+That patience paid off in twenty twelve. A team of researchers at the University of Toronto, including Alex Krizhevsky, Ilya Sutskever, and Geoffrey Hinton, entered a famous image recognition competition called ImageNet. Their system, a deep neural network now known as AlexNet, was trained on two Nvidia gaming graphics cards, and it beat the competition by a huge margin. It was a turning point for artificial intelligence. Researchers realized that deep learning worked extremely well, as long as you had enough data and enough computing power. And the best tool for that computing power was the GPU, running on CUDA.
+
+[VISUAL: server room; data center; cloud computing]
+Over the following years, Nvidia shifted its focus toward data centers. It designed powerful chips specifically for AI, and it built a whole ecosystem around them: software libraries, development tools, and networking. In twenty twenty, it completed the acquisition of Mellanox, a networking company, for about seven billion dollars, so that thousands of GPUs could work together as one giant computer. Not everything went to plan. A forty billion dollar deal to buy the chip designer Arm was abandoned in twenty twenty-two after opposition from regulators. But the core strategy was clear: Nvidia wanted to sell not just chips, but complete computing platforms.
+
+[VISUAL: cryptocurrency; bitcoin; mining]
+Along the way, there were ups and downs. During cryptocurrency booms, GPUs became popular for mining, and demand for Nvidia's cards surged. When those booms ended, demand dropped, and Nvidia's stock fell sharply. In twenty twenty-two, as technology stocks crashed, Nvidia's share price lost more than half of its value from its peak. Few people at that moment would have predicted what was about to happen.
+
+[VISUAL: chatbot; laptop; artificial intelligence]
+In November twenty twenty-two, OpenAI released ChatGPT. Within months, it had more than one hundred million users, and suddenly every major technology company wanted to build its own large AI models. Training these models requires thousands of high-end GPUs running for weeks or months. And the most powerful chips available, like Nvidia's H one hundred, were in extremely short supply. Companies waited months to get them. Nvidia had spent more than fifteen years building the hardware, the software, and the developer community that the AI boom suddenly needed.
+
+[VISUAL: stock market; rising chart; growth]
+The results were extraordinary. Nvidia's revenue from data centers exploded, and its profits grew at a pace almost never seen in a company of its size. Investors rushed in. In May twenty twenty-three, Nvidia's market value passed one trillion dollars. In June twenty twenty-four, it passed three trillion dollars and briefly became the most valuable public company in the world. And in July twenty twenty-five, it became the first company ever to reach a market value of four trillion dollars.
+
+[VISUAL: chess; competition; strategy]
+Of course, Nvidia's position is not guaranteed forever. Competitors like AMD are developing their own AI chips. Large customers such as Google, Amazon, and Microsoft are designing custom chips to reduce their dependence on Nvidia. Governments have placed restrictions on selling advanced chips to some countries. And the stock has always been volatile. Big expectations can lead to big drops when results disappoint.
+
+[VISUAL: success; leadership; mountain top]
+So what are the lessons of Nvidia's story? First, survival comes before success. Nvidia nearly died in its early years, and it survived by admitting its mistake and changing direction fast. Second, the most valuable bets often look foolish at the time. CUDA was criticized for years before it became the foundation of the AI industry. Third, building a whole ecosystem, not just a product, creates a powerful advantage that competitors find hard to copy. And finally, sometimes years of preparation meet a moment of perfect timing.
+
+[VISUAL: futuristic city; technology; future]
+From a meeting at a roadside diner to one of the most valuable companies on the planet, Nvidia's journey is one of the most remarkable stories in business history. Whatever happens next, it has already changed how the world computes. If you enjoyed this story, subscribe for more videos about the companies, markets, and ideas that shape our economy. Thanks for watching.

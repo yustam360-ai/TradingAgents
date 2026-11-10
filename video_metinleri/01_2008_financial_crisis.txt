@@ -1,0 +1,57 @@
+TITLE: How the 2008 Financial Crisis Happened – Explained Simply
+DESCRIPTION: In 2008 the global financial system came close to collapse. Banks failed, millions of people lost their homes and jobs, and stock markets lost about half their value. In this video we explain, step by step and in plain English, how it happened: the housing bubble, subprime mortgages, mortgage-backed securities, extreme leverage, the fall of Lehman Brothers, and the bailouts that followed.\n\nThis video is for educational purposes only and is not financial advice.
+TAGS: 2008 financial crisis, financial crisis explained, lehman brothers, subprime mortgage crisis, housing bubble, great recession, mortgage backed securities, stock market crash, economics explained, finance explained
+
+[VISUAL: wall street; new york stock exchange; stock market]
+In September two thousand eight, the world's financial system came closer to collapse than at any time since the Great Depression. One of the largest investment banks in America went bankrupt over a single weekend. Stock markets around the world crashed. And within a year, millions of people had lost their jobs, their savings, and their homes. But how did it happen? How could a problem that started with American home loans bring the entire global economy to its knees? Let's break it down, step by step.
+
+[VISUAL: suburban house; real estate; house for sale]
+To understand the crisis, we have to start with houses. For most of history, American home prices rose slowly, roughly in line with inflation. But between the late nineteen nineties and two thousand six, something unusual happened. Home prices started rising fast, year after year, in almost every part of the country. Many people began to believe that house prices simply could not go down. Buying a home was no longer just about having a place to live. It became an investment that seemed guaranteed to make money.
+
+[VISUAL: interest rates; federal reserve; money]
+Several things pushed this boom forward. After the dot-com crash and the attacks of September eleventh, the Federal Reserve cut interest rates to very low levels to support the economy. Cheap money made mortgages cheaper. At the same time, there was a huge amount of global savings looking for safe investments that paid a decent return. And American mortgages, it seemed, were exactly that kind of investment.
+
+[VISUAL: signing contract; loan; bank office]
+This is where subprime mortgages come in. A subprime mortgage is a home loan given to a borrower with weak credit, someone who would normally be considered a high risk. In the early two thousands, lenders began giving these loans in enormous numbers. Some loans required no down payment at all. Some required no proof of income. Many had low teaser rates for the first two or three years, after which the monthly payment would jump sharply. The thinking was simple: even if the borrower struggled, the house would keep rising in value, so the loan could always be refinanced or the house sold at a profit.
+
+[VISUAL: office building; banker; documents]
+Why would a lender give a risky loan to someone who might not repay it? Because the lender often didn't keep the loan. In the old model, a bank lent you money and carried the risk until you paid it back. In the new model, the lender sold the loan almost immediately to a large investment bank. The lender got paid for making the loan, not for making sure it was repaid. So the incentive was to make as many loans as possible.
+
+[VISUAL: stack of papers; financial documents; calculator]
+The investment banks then did something clever. They bundled thousands of mortgages together into a single financial product called a mortgage-backed security. Investors who bought it would receive a share of the monthly payments from all those homeowners. Then the banks went further. They sliced these securities into layers, called tranches. The top layer got paid first and was considered extremely safe. The bottom layers got paid last, took the first losses, and offered higher returns. Some of these pieces were repackaged again into even more complex products called collateralized debt obligations, or CDOs.
+
+[VISUAL: business meeting; rating; approval stamp]
+Here is the key problem. Credit rating agencies gave many of these products their highest rating, triple A, the same rating as government bonds. Their models assumed that mortgages in different parts of the country would not all fail at the same time. Historically, that had been true. So investors all over the world, pension funds, insurance companies, and banks in Europe and Asia, bought these securities, believing they were safe.
+
+[VISUAL: chart; graph; stock trading screen]
+At the same time, the big financial firms were borrowing heavily to buy more of these assets. This is called leverage. By two thousand seven, some investment banks had around thirty dollars of assets for every one dollar of their own capital. With leverage like that, a fall of just three or four percent in the value of your assets is enough to wipe out your entire capital. The system looked very profitable, but it had almost no room for error.
+
+[VISUAL: empty house; foreclosure; for sale sign]
+Then the housing boom ended. Around two thousand six, home prices stopped rising and began to fall. The teaser rates on millions of subprime loans reset to much higher payments. Borrowers who had been counting on refinancing couldn't, because their homes were now worth less than their loans. Defaults rose sharply. Foreclosures spread across entire neighborhoods. And as more homes were put up for sale, prices fell even further, creating a vicious circle.
+
+[VISUAL: stock market crash; falling chart; red screen]
+Suddenly, those triple A securities weren't safe at all. Their value collapsed, and because they were so complex, nobody knew exactly how much they were really worth, or which banks were holding the worst of them. Banks stopped trusting each other. They stopped lending to each other. The system that moves money around the world every day started to freeze.
+
+[VISUAL: bank building; financial district; skyscraper]
+In March two thousand eight, Bear Stearns, one of the largest investment banks on Wall Street, ran out of cash. With help from the Federal Reserve, it was sold to JPMorgan Chase for a tiny fraction of what it had been worth a year earlier. Many people hoped the worst was over. It wasn't. In early September, the government took control of Fannie Mae and Freddie Mac, the two giant companies that backed a huge share of American mortgages.
+
+[VISUAL: new york city; skyscraper; night city]
+Then came the weekend that changed everything. Lehman Brothers, a firm with a history going back more than one hundred and fifty years, was losing billions on real estate. Over the weekend of September thirteenth and fourteenth, the government and Wall Street executives searched for a buyer. No deal was reached, and the government decided not to rescue it. On Monday, September fifteenth, two thousand eight, Lehman Brothers filed for bankruptcy. With more than six hundred billion dollars in assets, it was the largest bankruptcy in American history.
+
+[VISUAL: stock exchange; traders; panic]
+The panic spread instantly. The next day, the government stepped in to rescue AIG, a giant insurance company that had sold enormous amounts of insurance against mortgage securities failing, with an initial loan of eighty-five billion dollars. A large money market fund "broke the buck," meaning investors who thought their money was completely safe actually lost some of it. On September twenty-ninth, when Congress first voted against a bank rescue plan, the Dow Jones fell about seven hundred and seventy-seven points, its largest point drop ever at that time.
+
+[VISUAL: government building; capitol; washington]
+Days later, Congress passed a revised plan: a seven hundred billion dollar program to stabilize the banking system, known as TARP. The Federal Reserve cut interest rates to almost zero and began pumping huge amounts of money into the financial system. Governments around the world took similar emergency steps. It was an enormous and controversial effort, but it stopped the financial system from collapsing completely.
+
+[VISUAL: unemployment; job search; empty office]
+The damage to the real economy was still severe. From its peak in October two thousand seven to its low in March two thousand nine, the S and P five hundred lost more than half of its value. US home prices fell by roughly a quarter to a third from their peak, depending on the measure. Millions of families lost their homes to foreclosure. The US economy lost almost nine million jobs, and unemployment reached ten percent in October two thousand nine. This period became known as the Great Recession.
+
+[VISUAL: law; documents; government]
+In the years that followed, governments introduced new rules. In the United States, the Dodd-Frank Act of two thousand ten required banks to hold more capital, introduced stress tests to check whether big banks could survive a crisis, and created new protections for consumers who take out loans.
+
+[VISUAL: thinking; books; library]
+So what are the lessons of two thousand eight? First, when everyone believes an asset can only go up, risk is usually much higher than it looks. Second, borrowing heavily turns small losses into disasters. Third, when the people who make a loan don't carry its risk, standards fall. And fourth, complexity can hide danger. If an investment is so complicated that almost nobody understands it, that alone is a warning sign.
+
+[VISUAL: sunrise city; skyline; business]
+The two thousand eight crisis wasn't caused by one bad decision or one bad person. It was caused by a whole chain of incentives, assumptions, and mistakes that all pointed in the same direction, until the moment they didn't. Understanding that chain is one of the best ways to recognize the next bubble before it bursts. If you found this explanation useful, subscribe for more stories about money, markets, and the events that shaped the modern economy. Thanks for watching.
