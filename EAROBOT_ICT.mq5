@@ -30,7 +30,7 @@
 //  PANEL : sol ust kose (grafik arka plani beyaz olmali, yazi siyah).
 //+------------------------------------------------------------------+
 #property copyright "EAROBOT"
-#property version   "2.00"
+#property version   "2.01"
 
 #include <Trade\Trade.mqh>
 
@@ -784,9 +784,17 @@ string NedenBul(ulong pid)
    return("");
 }
 
+ulong    KDTK[]; datetime KDZ[];                    // kapatma denemeleri (basarisizsa dakikada bir tekrar)
+
 void Kapat(ulong ticket, string neden)
 {
    if(!PositionSelectByTicket(ticket)) return;
+   datetime simdiK = SunucuSimdi();
+   int kd = -1;
+   for(int i = 0; i < ArraySize(KDTK); i++) if(KDTK[i] == ticket) { kd = i; break; }
+   if(kd >= 0 && (long)simdiK - (long)KDZ[kd] < 60) return;
+   if(kd < 0) { kd = ArraySize(KDTK); ArrayResize(KDTK, kd + 1); ArrayResize(KDZ, kd + 1); KDTK[kd] = ticket; }
+   KDZ[kd] = simdiK;
    string s = PositionGetString(POSITION_SYMBOL);
    NedenYaz((ulong)PositionGetInteger(POSITION_IDENTIFIER), neden);
    trade.SetExpertMagicNumber((ulong)PositionGetInteger(POSITION_MAGIC));
@@ -830,6 +838,25 @@ void KendiniKapat(string neden)
    }
 }
 
+//--- sembolun su anki islem seansinin bitisi (sunucu saniyesi); seans disindaysa 0
+long SeansSonu(string s, datetime t)
+{
+   MqlDateTime z;
+   TimeToStruct(t, z);
+   long gun0 = (long)t - (z.hour * 3600 + z.min * 60 + z.sec);
+   long sn = (long)t - gun0;
+   datetime a, b;
+   for(int i = 0; i < 10; i++)
+   {
+      if(!SymbolInfoSessionTrade(s, (ENUM_DAY_OF_WEEK)z.day_of_week, i, a, b)) break;
+      long A = (long)a % 86400, B = (long)b;
+      if(B <= A) B = 86400;
+      if(B > 86400) B = 86400;
+      if(sn >= A && sn < B) return(gun0 + B);
+   }
+   return(0);
+}
+
 //--- KESISIM: 5 gun (Asya kirilimi NY 16:00) | ICT: NY 16:00 kapanisi
 void SureKontrol()
 {
@@ -844,9 +871,13 @@ void SureKontrol()
       datetime ac = (datetime)PositionGetInteger(POSITION_TIME);
       if(IctMagic(mg))
       {
-         //--- islemin acildigi sunucu gununun 23:00'u (NY 16:00); son 1 dk mumu icinde (22:59:30) kapatilir
+         //--- islemin acildigi sunucu gununun 23:00'u (NY 16:00): son acik dakikada kapatilir
+         //    (22:59:30; sembolun islem seansi daha once bitiyorsa seans bitisinden 30 sn once)
          long gun = ((long)ac / 60) / 1440;
-         if((long)simdi >= (gun * 1440 + NY_KAPANIS - 1) * 60 + 30) Kapat(t, "NY 16:00 kapanış");
+         long kap = (gun * 1440 + NY_KAPANIS - 1) * 60 + 30;
+         long ss = SeansSonu(PositionGetString(POSITION_SYMBOL), simdi);
+         if(ss > 0 && ss - 30 < kap && ss > gun * 86400) kap = ss - 30;
+         if((long)simdi >= kap) Kapat(t, "NY 16:00 kapanış");
          continue;
       }
       int ki = KuralNo(mg);
