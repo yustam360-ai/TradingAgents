@@ -11,8 +11,9 @@ SONUCLAR MASAUSTUNE:  Masaustu\\ekin_142_test_<tarih>\\0_OZET.txt
 - Son 92 gun, gun gun; her an sadece o ana kadar olusmus mumlara bakilir.
 - Kurallar 6 aylik testle AYNI: risk 15 $, SPREAD DAHIL (MT5 1 dk spread'i), spread maliyeti 6 $'i gecen islem
   acilmaz, en kucuk lotta zarar 30 $'i gecerse islem acilmaz, ayni dakikada stop ve TP = STOP.
-- TEK FARK (senin istegin): NY 16:00'da kapatma YOK. Islem TP ya da STOP olana kadar acik kalir.
-  Test bitiminde hala acik olan islemler "ACIK" olarak ayri yazilir (son fiyatla degeri verilir).
+- NY 16:00 KAPATMA ACIK (Ekin 42 "gun icinde cikmak", 6 aylik testle ayni): TP ya da STOP olmayan islem
+  NY 16:00'da (TR kis 00:00) o anki fiyattan kapanir -> "SURE" (kar da olabilir zarar da).
+  Kapatmasiz hali icin:  py -3.8 ekin_142_test_3ay.py --kapatma_yok   (o zaman acik kalanlar "ACIK" yazilir)
 - 10.000 $ ile baslar; butun semboller ayni hesapta, ayni anda.
 
 CIKTI: 0_OZET.txt (genel 10.000 $, ay ay, sembol sembol basariya gore liste, %50 ustu)
@@ -41,6 +42,7 @@ MAKAS_SINIR = 6.0
 BASLANGIC = 10000.0
 SUNUCU_NY = 7
 GUN_SAYISI = 92
+NY_KAPAT = True
 KAPANIS = 23 * 60            # sunucu 23:00 = NY 16:00
 ESIT_TOL = (0.05, 0.1, 0.2)
 SORULAR = [("S1_MSS", ["SART", "IFVG_YETER"]), ("S2_YON", ["YOK", "EKIN", "ICT"]),
@@ -384,7 +386,7 @@ class Sembol(object):
             pen = [(SUNUCU_NY * 60 + 510, SUNUCU_NY * 60 + 660, "NY")]
         for k in range(8, len(self.gunler)):
             D = int(self.gunler[k] * 1440)
-            if D + 1440 < self.bas_dk or D + 1440 > self.son + 1440:
+            if D + 1440 < self.bas_dk or (NY_KAPAT and D + KAPANIS > self.son):
                 continue
             for a_, b_, kzad in pen:
                 ks, ke = D + a_, D + b_
@@ -520,7 +522,7 @@ class Sembol(object):
         g = self.Y[x["y"]]
         F, X, Yt, Cx, Em = g["F"], g["X"], g["Yt"], g["Cx"], g["Em"]
         T = self.T
-        z1 = len(self.T)                    # NY 16:00 kapatma YOK: TP ya da stop olana kadar acik
+        z1 = self.ix(x["D"] + KAPANIS) if NY_KAPAT else len(self.T)
         a0 = self.ix(x["Td"])
         n = 54
         r_fill = np.full(n, -1, np.int64)
@@ -872,7 +874,11 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--gun", type=int, default=GUN_SAYISI)
     ap.add_argument("--cikti", default="")
+    ap.add_argument("--kapatma_yok", action="store_true")
     args = ap.parse_args()
+    global NY_KAPAT
+    NY_KAPAT = not args.kapatma_yok
+    kapyaz = "NY 16:00 KAPATMA ACIK" if NY_KAPAT else "NY 16:00 KAPATMA YOK"
     if mt5 is None:
         sys.exit("MetaTrader5 modulu yok:  py -3.8 -m pip install MetaTrader5")
     if not mt5.initialize():
@@ -891,8 +897,8 @@ def main():
     if not os.path.isdir(klasor):
         os.makedirs(klasor)
     yaz = dict(sep=";", decimal=",", index=False, encoding="utf-8-sig")
-    print("Sembol: %d | %s -> bugun (%d gun, gun gun) | her sembol kendi mantigi | spread dahil | NY 16:00 kapatma YOK"
-          % (len(semboller), bas.date(), args.gun))
+    print("Sembol: %d | %s -> bugun (%d gun, gun gun) | her sembol kendi mantigi | spread dahil | %s"
+          % (len(semboller), bas.date(), args.gun, kapyaz))
     print("Sonuclar: %s" % klasor)
     kart_l, yok, t0 = [], [], time.time()
     for n_, (s, ms) in enumerate(MANTIK, 1):
@@ -913,14 +919,15 @@ def main():
             yok.append(s); print("[%d/%d] %s : hata %s" % (n_, len(MANTIK), s, h)); continue
         for x, kk, a in isl:
             c = kart(s, m, x, kk, a)
-            if c["sonuc"] == "SURE":
+            if c["sonuc"] == "SURE" and not NY_KAPAT:
                 c["sonuc"] = "ACIK"
             c["dolum_dk"] = int(a[0][kk])
             kart_l.append(c)
         z = [c for c in kart_l if c["sembol"] == s]
-        print("[%d/%d] %s : %d islem | TP %d | STOP %d | ACIK %d | %+.2f $  (%.0f sn)" % (
+        print("[%d/%d] %s : %d islem | TP %d | STOP %d | SURE %d | ACIK %d | %+.2f $  (%.0f sn)" % (
             n_, len(MANTIK), s, len(z), sum(c["sonuc"] == "TP" for c in z), sum(c["sonuc"] == "STOP" for c in z),
-            sum(c["sonuc"] == "ACIK" for c in z), sum(c["dolar"] for c in z), time.time() - t0))
+            sum(c["sonuc"] == "SURE" for c in z), sum(c["sonuc"] == "ACIK" for c in z), sum(c["dolar"] for c in z),
+            time.time() - t0))
     mt5.shutdown()
     if not kart_l:
         sys.exit("Hic islem yok.")
@@ -945,29 +952,29 @@ def main():
         tp, stp, ac = int((z["sonuc"] == "TP").sum()), int((z["sonuc"] == "STOP").sum()), int((z["sonuc"] == "ACIK").sum())
         kz = z[z["sonuc"] != "ACIK"]
         bas_ = 100.0 * (kz["R"] > 0).mean() if len(kz) else 0.0
-        return n, tp, stp, ac, bas_, float(kz["dolar"].sum()), float(z[z["sonuc"] == "ACIK"]["dolar"].sum())
+        return n, tp, stp, ac, bas_, float(kz["dolar"].sum()), float(z[z["sonuc"] == "ACIK"]["dolar"].sum()), int((z["sonuc"] == "SURE").sum())
 
     rows = []
     for s, z in d.groupby("sembol"):
-        n, tp, stp, ac, b, dl, ad = tab(z)
-        rows.append(dict(sembol=s, mantik=z["mantik"].iloc[0], islem=n, TP=tp, STOP=stp, ACIK=ac, basari=round(b, 1),
+        n, tp, stp, ac, b, dl, ad, su = tab(z)
+        rows.append(dict(sembol=s, mantik=z["mantik"].iloc[0], islem=n, TP=tp, STOP=stp, SURE=su, ACIK=ac, basari=round(b, 1),
                          dolar=round(dl, 2), acik_dolar=round(ad, 2)))
     sb_ = pd.DataFrame(rows).sort_values(["basari", "dolar"], ascending=False)
     c = "=" * 140
-    n, tp, stp, ac, b, dl, ad = tab(d)
-    m = [c, "EKIN MODELI - 142 SEMBOL KENDI MANTIGIYLA | %s -> bugun (%d gun) | SPREAD DAHIL | risk 15 $ | NY 16:00 KAPATMA YOK"
-         % (bas.date(), args.gun), "SAAT: " + saat_notu, c, "",
+    n, tp, stp, ac, b, dl, ad, su = tab(d)
+    m = [c, "EKIN MODELI - 142 SEMBOL KENDI MANTIGIYLA | %s -> bugun (%d gun) | SPREAD DAHIL | risk 15 $ | %s"
+         % (bas.date(), args.gun, kapyaz), "SAAT: " + saat_notu, c, "",
          "GENEL (butun semboller ayni hesapta):",
-         "   Islem %d | TP %d | STOP %d | hala ACIK %d | basari (kapananlarda) %%%.1f" % (n, tp, stp, ac, b),
+         "   Islem %d | TP %d | STOP %d | NY 16:00 SURE %d | hala ACIK %d | basari (kapananlarda) %%%.1f" % (n, tp, stp, su, ac, b),
          "   Kapanan islemler: " + hesap(g),
          "   Hala acik %d islemin su anki degeri: %+.2f $" % (ac, ad),
          "   Ayni anda en fazla acik islem: %d  (her biri en fazla ~15 $ risk -> en fazla ~%d $ acik risk)" % (en, en * 15),
          "   ay ay (kapananlar): " + "  ".join("%s %+.0f $" % (a, g[ayk == j].sum()) for j, a in enumerate(aylar)), ""]
     ust = sb_[(sb_["basari"] > 50) & ((sb_["TP"] + sb_["STOP"]) > 0)]
     m += [c, "SEMBOL SEMBOL - BASARIYA GORE (basari = kapanan islemlerde karla kapananlarin orani)", c,
-          "%-12s | %5s %4s %5s %5s %7s %10s %11s | MANTIK" % ("SEMBOL", "ISLEM", "TP", "STOP", "ACIK", "BASARI", "DOLAR", "ACIK_DEGER")]
+          "%-12s | %5s %4s %5s %5s %5s %7s %10s %11s | MANTIK" % ("SEMBOL", "ISLEM", "TP", "STOP", "SURE", "ACIK", "BASARI", "DOLAR", "ACIK_DEGER")]
     for r in sb_.itertuples():
-        m.append("%-12s | %5d %4d %5d %5d %%%6.1f %+10.2f %+11.2f | %s" % (r.sembol, r.islem, r.TP, r.STOP, r.ACIK, r.basari,
+        m.append("%-12s | %5d %4d %5d %5d %5d %%%6.1f %+10.2f %+11.2f | %s" % (r.sembol, r.islem, r.TP, r.STOP, r.SURE, r.ACIK, r.basari,
                                                                          r.dolar, r.acik_dolar, r.mantik))
     g50 = np.zeros(ngun)
     for cc in kap[kap["sembol"].isin(ust["sembol"])].itertuples():
@@ -975,9 +982,9 @@ def main():
         if 0 <= k < ngun:
             g50[k] += cc.dolar
     m += ["", c, "BASARISI %%50 USTU SEMBOLLER: %d" % len(ust), c,
-          "%-12s | %5s %4s %5s %5s %7s %10s" % ("SEMBOL", "ISLEM", "TP", "STOP", "ACIK", "BASARI", "DOLAR")]
+          "%-12s | %5s %4s %5s %5s %5s %7s %10s" % ("SEMBOL", "ISLEM", "TP", "STOP", "SURE", "ACIK", "BASARI", "DOLAR")]
     for r in ust.itertuples():
-        m.append("%-12s | %5d %4d %5d %5d %%%6.1f %+10.2f" % (r.sembol, r.islem, r.TP, r.STOP, r.ACIK, r.basari, r.dolar))
+        m.append("%-12s | %5d %4d %5d %5d %5d %%%6.1f %+10.2f" % (r.sembol, r.islem, r.TP, r.STOP, r.SURE, r.ACIK, r.basari, r.dolar))
     m.append("Sadece bu semboller, 10.000 $ (kapananlar): " + hesap(g50))
     m.append("   ay ay: " + "  ".join("%s %+.0f $" % (a, g50[ayk == j].sum()) for j, a in enumerate(aylar)))
     if yok:
