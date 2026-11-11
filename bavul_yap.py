@@ -366,8 +366,13 @@ def on_resim(resim, zoom_en=1.08):
     if yuk > 1250:
         yuk = 1250
         gen = int(resim.width * 1250 / resim.height)
-    buyuk = resim.resize((int(gen * zoom_en), int(yuk * zoom_en)), Image.LANCZOS)
-    buyuk = buyuk.filter(ImageFilter.UnsharpMask(2, 70, 2))
+    hedef = (int(gen * zoom_en), int(yuk * zoom_en))
+    ara = resim
+    # kucuk resim kademeli buyutulur (her adimda en fazla 2 kat), her adimda hafif keskinlestirme
+    while ara.width * 2 < hedef[0]:
+        ara = ara.resize((ara.width * 2, ara.height * 2), Image.LANCZOS).filter(ImageFilter.UnsharpMask(1.2, 60, 1))
+    buyuk = ara.resize(hedef, Image.LANCZOS)
+    buyuk = buyuk.filter(ImageFilter.UnsharpMask(1.6, 90, 2))
     return buyuk, gen, yuk
 
 
@@ -553,7 +558,8 @@ def bolum_yap(klasor, cikti_klasor):
     hedef_gecici = os.path.join(gecici, "video.mp4")
     proc = subprocess.Popen([FFMPEG, "-hide_banner", "-loglevel", "error", "-y", "-f", "rawvideo", "-pix_fmt", "rgb24",
                              "-s", "%dx%d" % (W, H), "-r", str(FPS), "-i", "-", "-i", ses, "-c:v", "libx264",
-                             "-preset", "veryfast", "-crf", "20", "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "192k",
+                             "-preset", "medium", "-tune", "animation", "-crf", "16", "-profile:v", "high", "-level", "4.2",
+                             "-maxrate", "16M", "-bufsize", "32M", "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "256k", "-ar", "48000",
                              "-shortest", "-movflags", "+faststart", hedef_gecici], stdin=subprocess.PIPE)
     etiket = ust_etiket(bas["SERI"], no, bas["BASLIK"])
     gst = gosterge_coz(bas["GOSTERGE"])
@@ -588,7 +594,7 @@ def bolum_yap(klasor, cikti_klasor):
             cw, ch = buyuk.width / z, buyuk.height / z
             cx = buyuk.width / 2 + yon * (buyuk.width - cw) / 2 * (ilerleme - 0.5) * 0.8
             cyy = buyuk.height / 2
-            kesit = buyuk.crop((int(cx - cw / 2), int(cyy - ch / 2), int(cx + cw / 2), int(cyy + ch / 2))).resize((gen, yuk), Image.BILINEAR)
+            kesit = buyuk.crop((int(cx - cw / 2), int(cyy - ch / 2), int(cx + cw / 2), int(cyy + ch / 2))).resize((gen, yuk), Image.BICUBIC)
             kare = bg.copy()
             if s["tur"] in ("SECIM", "OYLAMA"):
                 kare.paste(ImageEnhance.Brightness(kesit).enhance(0.35), ((W - gen) // 2, cy - yuk // 2))
