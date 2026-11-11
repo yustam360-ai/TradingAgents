@@ -10,7 +10,8 @@ TEK DOSYA.
 
 KLASORLER:
     Masaustu\\videolar\\bavul\\bolum1\\bolum.txt        -> bolumun metni (asagidaki bicim)
-    Masaustu\\videolar\\bavul\\bolum1\\storyboard.jpg   -> Gemini'nin kare kare resmi (program kendisi boler)
+    Masaustu\\videolar\\bavul\\bolum1\\storyboard1.jpg, storyboard2.jpg ... -> Gemini'nin kare kare resimleri
+                                                     (program boler, sirayla sahne1, sahne2 ... olur)
          ya da sahne1.png, sahne2.png ...              -> ayri ayri resimler
     Masaustu\\videolar\\bavul\\bolum1\\muzik.mp3        -> (istege bagli) arka plan muzigi, kisik sesle eklenir
     Masaustu\\videolar\\bavul\\bolum1\\ses1.wav, ses2.wav -> (istege bagli) hazir seslendirme (Google AI Studio ya da
@@ -242,12 +243,18 @@ def resimleri_yukle(klasor):
             ayri[int(m.group(1))] = Image.open(os.path.join(klasor, d)).convert("RGB")
     if ayri:
         return ayri
+    sb = []
     for d in os.listdir(klasor):
-        if re.match(r"^storyboard\.(png|jpg|jpeg|webp)$", d, re.I):
-            parca = storyboard_bol(os.path.join(klasor, d))
-            print("   storyboard %d kareye bolundu" % len(parca))
-            return {i + 1: p for i, p in enumerate(parca)}
-    return {}
+        m = re.match(r"^storyboard(\d*)\.(png|jpg|jpeg|webp)$", d, re.I)
+        if m:
+            sb.append((int(m.group(1)) if m.group(1) else 0, d))
+    out = {}
+    for _, d in sorted(sb):                       # storyboard1, storyboard2 ... sirayla
+        parca = storyboard_bol(os.path.join(klasor, d))
+        print("   %s: %d kareye bolundu" % (d, len(parca)))
+        for p in parca:
+            out[len(out) + 1] = p
+    return out
 
 
 # ----------------------------------------------------------------- ses
