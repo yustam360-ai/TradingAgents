@@ -13,6 +13,10 @@ KLASORLER:
     Masaustu\\videolar\\bavul\\bolum1\\storyboard.jpg   -> Gemini'nin kare kare resmi (program kendisi boler)
          ya da sahne1.png, sahne2.png ...              -> ayri ayri resimler
     Masaustu\\videolar\\bavul\\bolum1\\muzik.mp3        -> (istege bagli) arka plan muzigi, kisik sesle eklenir
+    Masaustu\\videolar\\bavul\\bolum1\\ses1.wav, ses2.wav -> (istege bagli) hazir seslendirme (Google AI Studio ya da
+                                                     kendi sesin); her [..] blogu icin sirayla bir dosya.
+                                                     Yoksa Microsoft sesi kullanilir.
+    ALTYAZI: VAR  (bolum.txt basina yazilirsa altyazi eklenir; varsayilan YOK)
     Masaustu\\videolar\\bavul\\cikti\\bolum1.mp4        -> HAZIR VIDEO (1080x1920)
 
 BOLUM.TXT BICIMI:
@@ -261,6 +265,11 @@ async def _tts(metin, ses, hiz, mp3):
 
 
 def seslendir(metin, ses, hiz, mp3):
+    if sys.platform.startswith("win"):
+        try:
+            asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+        except Exception:
+            pass
     for deneme in range(4):
         try:
             return asyncio.run(_tts(metin, ses, hiz, mp3))
@@ -441,16 +450,36 @@ def bolum_yap(klasor, cikti_klasor):
 
     # 1) seslendirme
     ses_listesi, plan = [], []
+    hazir = {}
+    for d in os.listdir(klasor):
+        m = re.match(r"^ses(\d+)\.(wav|mp3|m4a|ogg|aac|flac|opus)$", d, re.I)
+        if m:
+            hazir[int(m.group(1))] = os.path.join(klasor, d)
+    altyazi_acik = bas.get("ALTYAZI", "YOK").strip().upper() in ("VAR", "EVET", "ACIK", "AÇIK")
+    if hazir:
+        print("   hazir ses dosyalari kullaniliyor: %d dosya (ses1, ses2 ...)" % len(hazir))
     for i, s in enumerate(sahneler):
         metin = s["METIN"]
-        mp3 = os.path.join(gecici, "s%02d.mp3" % i)
-        kel = seslendir(metin, bas["SES"], bas["HIZ"], mp3) if metin else []
-        dur = (sure(mp3) if metin else 2.5) + PAY
+        kel = []
+        if (i + 1) in hazir:
+            mp3 = os.path.join(gecici, "s%02d_h.wav" % i)
+            # bas ve sondaki sessizlik kirpilir
+            ff(["-i", hazir[i + 1], "-af", "silenceremove=start_periods=1:start_threshold=-45dB:start_silence=0.05,"
+                "areverse,silenceremove=start_periods=1:start_threshold=-45dB:start_silence=0.05,areverse",
+                "-ar", "48000", "-ac", "2", mp3])
+            var = True
+        elif metin:
+            mp3 = os.path.join(gecici, "s%02d.mp3" % i)
+            kel = seslendir(metin, bas["SES"], bas["HIZ"], mp3)
+            var = True
+        else:
+            var = False
+        dur = (sure(mp3) if var else 2.5) + PAY
         if s["tur"] == "SECIM":
             dur += 2.5                       # oylama ekrani biraz daha ekranda kalsin
-        plan.append((s, dur, altyazi_parcalari(kel) if s["tur"] in ("SAHNE", "KAPAK") else []))
+        plan.append((s, dur, altyazi_parcalari(kel) if (altyazi_acik and s["tur"] in ("SAHNE", "KAPAK")) else []))
         wav = os.path.join(gecici, "s%02d.wav" % i)
-        if metin:
+        if var:
             ff(["-i", mp3, "-af", "apad", "-t", "%.3f" % dur, "-ar", "48000", "-ac", "2", wav])
         else:
             ff(["-f", "lavfi", "-i", "anullsrc=r=48000:cl=stereo", "-t", "%.3f" % dur, wav])
