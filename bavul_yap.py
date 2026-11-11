@@ -232,7 +232,44 @@ def storyboard_bol(yol):
             out += [(r0, c0, r1, c1) for c0, c1 in sut]
         if len(out) > len(en):
             en = out
-    return [im.crop((c0 + 2, r0 + 2, c1 - 2, r1 - 2)) for r0, c0, r1, c1 in en]
+    return [kenar_temizle(im.crop((c0 + 2, r0 + 2, c1 - 2, r1 - 2))) for r0, c0, r1, c1 in en]
+
+
+def kenar_temizle(p):
+    """karenin kenarinda kalan beyaz bosluk ve ince siyah cerceve cizgisini kirpar.
+    beyaz: her kenardan en fazla %15; siyah cizgi: en fazla 8 piksel (karanlik sahne kesilmesin)"""
+    a = np.asarray(p.convert("L")).astype(float)
+    h, w = a.shape
+
+    def beyaz(v):
+        return (v > 232).mean() > 0.9
+
+    def siyah(v):
+        return (v < 18).mean() > 0.92
+    ust, alt, sol, sag = 0, h, 0, w
+    for _ in range(2):                                  # beyaz -> siyah cizgi -> beyaz sirasi icin iki tur
+        while ust < h * 0.15 and beyaz(a[ust, sol:sag]):
+            ust += 1
+        while alt > h * 0.85 and beyaz(a[alt - 1, sol:sag]):
+            alt -= 1
+        while sol < w * 0.15 and beyaz(a[ust:alt, sol]):
+            sol += 1
+        while sag > w * 0.85 and beyaz(a[ust:alt, sag - 1]):
+            sag -= 1
+        k = 0
+        while k < 8 and ust < alt - 1 and siyah(a[ust, sol:sag]):
+            ust += 1; k += 1
+        k = 0
+        while k < 8 and alt > ust + 1 and siyah(a[alt - 1, sol:sag]):
+            alt -= 1; k += 1
+        k = 0
+        while k < 8 and sol < sag - 1 and siyah(a[ust:alt, sol]):
+            sol += 1; k += 1
+        k = 0
+        while k < 8 and sag > sol + 1 and siyah(a[ust:alt, sag - 1]):
+            sag -= 1; k += 1
+    pay = 1 if (ust or sol or alt < h or sag < w) else 0
+    return p.crop((sol + pay, ust + pay, sag - pay, alt - pay))
 
 
 def resimleri_yukle(klasor):
