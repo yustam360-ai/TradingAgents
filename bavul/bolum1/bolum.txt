@@ -1,0 +1,40 @@
+SERI: BAVUL
+BOLUM: 1
+BASLIK: PİKNİK
+SES: tr-TR-AhmetNeural
+HIZ: +0%
+GOSTERGE: PARA=0 ₺ | TAKİP=%0 | EMRE GÜVEN=%90
+
+[KAPAK sahne=5]
+YAZI: ORMANDA 100 MİLYON TL | BULSAN NE YAPARDIN?
+METIN: Ormanda yüz milyon lira bulsan, ne yapardın?
+
+[SAHNE sahne=1]
+METIN: Pazar sabahı. En yakın arkadaşın Emre'yle şehir dışında bir ormana mangala gittiniz.
+
+[SAHNE sahne=2]
+METIN: Ateş yanarken, sen odun toplamak için ağaçların arasına daldın.
+
+[SAHNE sahne=3]
+METIN: Biraz ileride, çamura saplanmış siyah bir araba gördün. Kapıları açık. İçinde kimse yok. Ön camda bir kurşun deliği.
+GOSTERGE: TAKİP=%5
+
+[SAHNE sahne=4]
+METIN: Bagajı açtın. İçinde siyah, ağır bir bavul vardı.
+
+[SAHNE sahne=5]
+METIN: Fermuarı çektin ve donup kaldın. Deste deste para. Tam yüz milyon lira.
+GOSTERGE: PARA=100.000.000 ₺
+
+[SAHNE sahne=6]
+METIN: Bavulun içinde katlanmış küçük bir not vardı. Üzerinde tek bir kelime yazıyordu: Cumartesi.
+GOSTERGE: TAKİP=%10
+
+[SAHNE sahne=7]
+METIN: Tam o sırada arkadan Emre'nin sesi geldi: Kerem! Neredesin? Etler yanıyor!
+
+[SECIM sahne=8]
+A: SAKLA | Bavulu sakla, kimseye söyleme
+B: PAYLAŞ | Emre'yi çağır, parayı paylaşın
+METIN: Şimdi karar senin. A, bavulu sakla, kimseye söyleme. B, Emre'yi çağır, parayı paylaşın. Yorumlara A ya da B yaz. En çok seçilenle devam ediyoruz.
+ALT: Yorumlara A ya da B yaz • En çok seçilenle devam ediyoruz
