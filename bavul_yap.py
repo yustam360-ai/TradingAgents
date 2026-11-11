@@ -366,14 +366,15 @@ def sessizlikler(dosya):
 
 def anlatim_bol(dosya, metinler, gecici):
     """tek seslendirme dosyasini sahnelere boler.
-    Her sahne sinirinin yeri metin uzunluguna gore tahmin edilir; sessizlikler arasindan,
-    sirayla, hem UZUN hem de tahmine YAKIN olanlar dinamik programlamayla birlikte secilir.
-    Hicbir sahne, tahmini suresinin %35'inden kisa olamaz."""
+    Metinde sahneler arasina uzun bir sessizlik isareti konur (ornek: "... ... ..."), boylece sahne
+    aralari cumle ici duraklamalardan belirgin sekilde UZUN olur. Program sirayla en uzun
+    sessizlikleri secer (metin uzunluguna gore tahmini yere yakinlik ikinci olcut).
+    Secilen en kisa sahne arasi, secilmeyen en uzun duraklamadan belirgin uzun degilse video YAPILMAZ."""
     toplam = sure(dosya)
     n = len(metinler)
     uz = [max(1, len(m)) for m in metinler]
     top = float(sum(uz))
-    pay = [toplam * u / top for u in uz]                       # sahne basina tahmini sure
+    pay = [toplam * u / top for u in uz]
     tahmin, b = [], 0.0
     for k in range(n - 1):
         b += pay[k]
@@ -381,55 +382,57 @@ def anlatim_bol(dosya, metinler, gecici):
     sess = [((a + c) / 2.0, c - a) for a, c in sessizlikler(dosya) if 0.05 < (a + c) / 2.0 < toplam - 0.05]
     m = len(sess)
     if n <= 1:
-        kes = []
-    elif m < n - 1:
-        kes = tahmin
-    else:
-        en_uzun = max(d for _, d in sess) or 1.0
-        def puan(k, j):
-            orta, d = sess[j]
-            yakin = abs(orta - tahmin[k]) / max(1.0, pay[k] + pay[k + 1])
-            return d / en_uzun - 2.5 * yakin
-        NEG = -1e18
-        dp = [[NEG] * m for _ in range(n - 1)]
-        geri = [[-1] * m for _ in range(n - 1)]
+        return [dosya]
+    if m < n - 1:
+        raise RuntimeError("Anlatimda %d sahne arasi icin yeterli sessizlik bulunamadi (%d). Sahneler arasina "
+                           "'... ... ...' satiri koyup sesi tekrar olusturun." % (n - 1, m))
+    en_uzun = max(d for _, d in sess) or 1.0
+    NEG = -1e18
+
+    def puan(k, j):
+        orta, d = sess[j]
+        return 3.0 * d / en_uzun - 0.8 * abs(orta - tahmin[k]) / max(1.0, toplam / n)
+    dp = [[NEG] * m for _ in range(n - 1)]
+    geri = [[-1] * m for _ in range(n - 1)]
+    for j in range(m):
+        if sess[j][0] >= 0.3 * pay[0]:
+            dp[0][j] = puan(0, j)
+    for k in range(1, n - 1):
         for j in range(m):
-            if sess[j][0] >= 0.35 * pay[0]:
-                dp[0][j] = puan(0, j)
-        for k in range(1, n - 1):
-            for j in range(m):
-                bas = NEG
-                bi = -1
-                for i2 in range(j):
-                    if dp[k - 1][i2] > bas and sess[j][0] - sess[i2][0] >= 0.35 * pay[k]:
-                        bas, bi = dp[k - 1][i2], i2
-                if bi >= 0:
-                    dp[k][j] = bas + puan(k, j)
-                    geri[k][j] = bi
-        son = n - 2
-        aday = [(dp[son][j], j) for j in range(m) if dp[son][j] > NEG and toplam - sess[j][0] >= 0.35 * pay[-1]]
-        if not aday:
-            kes = tahmin
-        else:
-            j = max(aday)[1]
-            secim = []
-            for k in range(son, -1, -1):
-                secim.append(j)
-                j = geri[k][j]
-            kes = [sess[x][0] for x in reversed(secim)]
+            bas, bi = NEG, -1
+            for i2 in range(j):
+                if dp[k - 1][i2] > bas and sess[j][0] - sess[i2][0] >= 0.3 * pay[k]:
+                    bas, bi = dp[k - 1][i2], i2
+            if bi >= 0:
+                dp[k][j] = bas + puan(k, j)
+                geri[k][j] = bi
+    son = n - 2
+    aday = [(dp[son][j], j) for j in range(m) if dp[son][j] > NEG and toplam - sess[j][0] >= 0.3 * pay[-1]]
+    if not aday:
+        raise RuntimeError("Anlatim sahnelere bolunemedi. Sahneler arasina '... ... ...' satiri koyup sesi tekrar olusturun.")
+    j = max(aday)[1]
+    secim = []
+    for k in range(son, -1, -1):
+        secim.append(j)
+        j = geri[k][j]
+    secim = list(reversed(secim))
+    kes = [sess[x][0] for x in secim]
+    sec_min = min(sess[x][1] for x in secim)
+    diger = [sess[x][1] for x in range(m) if x not in secim]
+    diger_max = max(diger) if diger else 0.0
+    print("   anlatim bolme noktalari (sn): %s" % ", ".join("%.1f" % x for x in kes))
+    print("   sahne arasi en kisa sessizlik %.2f sn, cumle ici en uzun duraklama %.2f sn" % (sec_min, diger_max))
+    if diger and sec_min < diger_max * 1.25:
+        raise RuntimeError(
+            "Sahne aralari cumle ici duraklamalardan yeterince uzun degil; ses ile resim kayabilir, video YAPILMADI.\n"
+            "   Cozum: metinde sahneler arasina '... ... ...' satiri koyup sesi tekrar olusturun "
+            "(ya da her sahneyi ayri ses dosyasi yapin: ses1, ses2 ...).")
     sinir = [0.0] + kes + [toplam]
     out = []
     for i in range(n):
         w = os.path.join(gecici, "anlatim_%02d.wav" % i)
         ff(["-ss", "%.3f" % sinir[i], "-to", "%.3f" % sinir[i + 1], "-i", dosya, "-ar", "48000", "-ac", "2", w])
         out.append(w)
-    print("   anlatim bolme noktalari (sn): %s" % ", ".join("%.1f" % x for x in kes))
-    supheli = [i + 1 for i in range(n) if not (0.5 * pay[i] <= sinir[i + 1] - sinir[i] <= 1.8 * pay[i])]
-    if supheli:
-        raise RuntimeError(
-            "Tek anlatim dosyasi guvenle bolunemedi (supheli sahneler: %s). Ses ile resim kayabilir, video YAPILMADI.\n"
-            "   Cozum: her sahnenin sesini AYRI dosya yapin (ses1, ses2 ... ) ve anlatim dosyasini klasorden cikarin."
-            % ", ".join(str(x) for x in supheli))
     return out
 
 
