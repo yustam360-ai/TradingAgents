@@ -2,7 +2,7 @@
 
 ## Cikarilacak semboller (kullanici karari, 11.11.2026)
 3 aylik test (2026.08.01 - 2026.11.09, EA_MONEY_ROBOT 2.01, gercek tik, rastgele gecikme) sonucunda zararda kalanlar.
-Robot guncellenirken bunlar CIKARILACAK (kullanici "yap" deyince).
+UYGULANDI: EA_MONEY_ROBOT / EAROBOT_ICT 2.02 (11.11.2026). Kesisim 26 sembol/26 kural, ICT 78 sembol.
 
 ICT (4):      SNOW, ASML, AUDCHF, ALVG
 KESISIM (13): EURNOK, MANUSD, ALVG, GOOG, EURNZD, AZN, MSFT, IBM, ZM, SAN, T, BA, LMT

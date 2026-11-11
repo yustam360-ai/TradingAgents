@@ -1,14 +1,16 @@
 ﻿//+------------------------------------------------------------------+
 //|  EAROBOT_ICT.mq5                                                 |
 //|  IKI MANTIKLI ROBOT (MT5 / MQL5) - FTMO                          |
-//|  1) KESISIM : EAROBOT'un kurallari (22 sembolun kurallari cikti)  |
-//|  2) ICT     : Ekin/ICT modeli, 82 sembol, her biri kendi mantigi |
+//|  1) KESISIM : EAROBOT'un kurallari (35 sembolun kurallari cikti)  |
+//|  2) ICT     : Ekin/ICT modeli, 78 sembol, her biri kendi mantigi |
 //+------------------------------------------------------------------+
 //  Butun saatler NEW YORK saati (FTMO sunucusu = NY + 7 saat, SunucuNY ayari).
 //
-//  1) KESISIM (EAROBOT, AYNEN): 39 sembol, 39 kural. Cikarilan 22 sembol:
+//  1) KESISIM (EAROBOT, AYNEN): 26 sembol, 26 kural. Cikarilan 35 sembol:
 //     AAPL JNJ XAUUSD(Asya kirilimi) RACE CSCO BABA FRA40.cash EU50.cash USDILS USDSGD EURCZK
 //     SOYBEAN.c HEATOIL.c ADAUSD XCUUSD EURHUF FDX XPTUSD CORN.c WHEAT.c BAC XTZUSD
+//     + 2.02 (3 aylik testte zarar edenler): EURNOK MANUSD ALVG GOOG EURNZD AZN MSFT IBM ZM SAN T BA LMT
+//  ICT'den cikarilan (2.02, 3 aylik testte zarar edenler): SNOW ASML AUDCHF ALVG
 //     - 1 saatlik mum kapaninca sart kontrol edilir, sart varsa piyasa emriyle islem acilir.
 //     - STOP = giris -/+ (stop katsayisi x ATR14), HEDEF = stopun 2 kati. 5 gun icinde TP/stop yoksa kapanir.
 //     - Magic: Sihir*100 + kural no.  Ayni kural ayni anda tek islem, ayni yonde 10 dk tekrar acmaz.
@@ -30,7 +32,7 @@
 //  PANEL : sol ust kose (grafik arka plani beyaz olmali, yazi siyah).
 //+------------------------------------------------------------------+
 #property copyright "EAROBOT"
-#property version   "2.01"
+#property version   "2.02"
 
 #include <Trade\Trade.mqh>
 
@@ -256,15 +258,26 @@ void KurallariYukle()
    EmaKural("CVX",         5, 13,   0, 1.8);
 }
 
-//--- KESISIM'den cikarilan 22 sembol (kurallari pasif; sira numaralari ve magic'ler degismez)
+//--- KESISIM'den cikarilan semboller (kurallari pasif; sira numaralari ve magic'ler degismez)
 void KesisimCikar()
 {
    string cik[] = {"AAPL", "JNJ", "XAUUSD", "RACE", "CSCO", "BABA", "FRA40.cash", "EU50.cash", "USDILS", "USDSGD",
                    "EURCZK", "SOYBEAN.c", "HEATOIL.c", "ADAUSD", "XCUUSD", "EURHUF", "FDX", "XPTUSD", "CORN.c",
-                   "WHEAT.c", "BAC", "XTZUSD"};
+                   "WHEAT.c", "BAC", "XTZUSD",
+                   // 2.02: 3 aylik testte (2026.08.01-11.09) zarar eden Kesisim sembolleri
+                   "EURNOK", "MANUSD", "ALVG", "GOOG", "EURNZD", "AZN", "MSFT", "IBM", "ZM", "SAN", "T", "BA", "LMT"};
    for(int ki = 0; ki < ArraySize(K); ki++)
       for(int j = 0; j < ArraySize(cik); j++)
          if(K[ki].s == cik[j]) { K[ki].aktif = false; break; }
+}
+
+//--- ICT'den cikarilan semboller (2.02: 3 aylik testte zarar edenler; sira numaralari ve magic'ler degismez)
+void IctCikar()
+{
+   string cik[] = {"SNOW", "ASML", "AUDCHF", "ALVG"};
+   for(int ei = 0; ei < ArraySize(EK); ei++)
+      for(int j = 0; j < ArraySize(cik); j++)
+         if(EK[ei].s == cik[j]) { EK[ei].aktif = false; break; }
 }
 
 //+------------------------------------------------------------------+
@@ -2361,6 +2374,7 @@ int OnInit()
    KurallariYukle();
    KesisimCikar();
    EkinYukle();
+   IctCikar();
 
    ArrayResize(SEM, 0);
    string bulunamayan = "";
