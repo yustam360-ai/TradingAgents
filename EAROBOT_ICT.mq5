@@ -22,7 +22,7 @@
 //       seviyesine giderse emir iptal.  Acik islem NY 16:00'da kapanir.
 //     - Sembolde ayni anda tek ICT islemi / emri.  DISIPLIN=EKIN: seansta tek islem, kazandiysa o gun bitti.
 //     - Magic: (Sihir+1)*100 + sembol sira no.
-//  LOT   : stop olursa RiskDolar (15 $) zarar. En kucuk lottan kucukse en kucuk lot;
+//  LOT   : stop olursa RiskDolar (22,5 $) zarar. En kucuk lottan kucukse en kucuk lot;
 //          en kucuk lotta zarar EnFazlaZarar'i (30 $) gecerse islem ACILMAZ.
 //  MAKAS : o andaki spread'in o lottaki maliyeti MakasSinir'i (6 $) gecerse islem ACILMAZ.
 //  GUNLUK LIMIT: 250 $, SADECE BU ROBOTUN islemleri (iki mantik birlikte). Kalan = 250 + bugun kapanan + acik.
@@ -32,11 +32,11 @@
 //  PANEL : sol ust kose (grafik arka plani beyaz olmali, yazi siyah).
 //+------------------------------------------------------------------+
 #property copyright "EAROBOT"
-#property version   "2.02"
+#property version   "2.03"
 
 #include <Trade\Trade.mqh>
 
-input double RiskDolar      = 15.0;      // stop olursa zarar ($)
+input double RiskDolar      = 22.5;      // stop olursa zarar ($)  (2.03: 15 -> 22.5, 1.5 kat)
 input double EnFazlaZarar   = 30.0;      // en kucuk lotta zarar bunu gecerse islem yok ($)
 input double MakasSinir     = 6.0;       // spread maliyeti bunu gecerse islem yok ($)
 input double GunlukLimit    = 250.0;     // robotun gunluk zarar limiti ($), acik islemler dahil
