@@ -16,6 +16,8 @@ KLASORLER:
     Masaustu\\videolar\\bavul\\bolum1\\ses1.wav, ses2.wav -> (istege bagli) hazir seslendirme (Google AI Studio ya da
                                                      kendi sesin); her [..] blogu icin sirayla bir dosya.
                                                      Yoksa Microsoft sesi kullanilir.
+    Masaustu\\videolar\\bavul\\bolum1\\anlatim.wav       -> (istege bagli) TEK dosyada butun seslendirme; program
+                                                     sahnelere kendisi boler (sessizliklerden)
     ALTYAZI: VAR  (bolum.txt basina yazilirsa altyazi eklenir; varsayilan YOK)
     Masaustu\\videolar\\bavul\\cikti\\bolum1.mp4        -> HAZIR VIDEO (1080x1920)
 
@@ -308,6 +310,44 @@ def altyazi_parcalari(kel):
     return out
 
 
+def sessizlikler(dosya):
+    """[(bas, bit)] sessiz araliklar (sn)"""
+    r = subprocess.run([FFMPEG, "-hide_banner", "-i", dosya, "-af", "silencedetect=noise=-38dB:d=0.25", "-f", "null", "-"],
+                       stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    t = r.stderr.decode("utf-8", "ignore")
+    bas = [float(x) for x in re.findall(r"silence_start: ([\d.]+)", t)]
+    bit = [float(x) for x in re.findall(r"silence_end: ([\d.]+)", t)]
+    return list(zip(bas, bit))
+
+
+def anlatim_bol(dosya, metinler, gecici):
+    """tek seslendirme dosyasini sahnelere boler: metin uzunluguna gore tahmini yerin
+    en yakinindaki (ve en uzun) sessizlikten keser. donus: her sahne icin wav yolu"""
+    toplam = sure(dosya)
+    sess = sessizlikler(dosya)
+    uz = [max(1, len(m)) for m in metinler]
+    top = float(sum(uz))
+    kes, birikim, onceki = [], 0.0, 0.0
+    for i in range(len(uz) - 1):
+        birikim += uz[i]
+        tahmin = toplam * birikim / top
+        aday = [(a, b) for a, b in sess if (a + b) / 2 > onceki + 0.5 and abs((a + b) / 2 - tahmin) < 3.0]
+        if aday:
+            a, b = max(aday, key=lambda ab: (ab[1] - ab[0]) - 0.15 * abs((ab[0] + ab[1]) / 2 - tahmin))
+            nokta = (a + b) / 2
+        else:
+            nokta = tahmin
+        kes.append(nokta)
+        onceki = nokta
+    sinir = [0.0] + kes + [toplam]
+    out = []
+    for i in range(len(metinler)):
+        w = os.path.join(gecici, "anlatim_%02d.wav" % i)
+        ff(["-ss", "%.3f" % sinir[i], "-to", "%.3f" % sinir[i + 1], "-i", dosya, "-ar", "48000", "-ac", "2", w])
+        out.append(w)
+    return out
+
+
 # ----------------------------------------------------------------- cizim katmanlari
 def arka_plan(resim):
     """resmin bulanik, karartilmis hali tam ekran"""
@@ -456,7 +496,14 @@ def bolum_yap(klasor, cikti_klasor):
         if m:
             hazir[int(m.group(1))] = os.path.join(klasor, d)
     altyazi_acik = bas.get("ALTYAZI", "YOK").strip().upper() in ("VAR", "EVET", "ACIK", "AÇIK")
-    if hazir:
+    if not hazir:
+        for d in os.listdir(klasor):
+            if re.match(r"^anlatim\.(wav|mp3|m4a|ogg|aac|flac|opus)$", d, re.I):
+                parca = anlatim_bol(os.path.join(klasor, d), [s["METIN"] for s in sahneler], gecici)
+                hazir = {i + 1: p for i, p in enumerate(parca)}
+                print("   tek anlatim dosyasi %d sahneye bolundu: %s" % (len(parca), d))
+                break
+    elif hazir:
         print("   hazir ses dosyalari kullaniliyor: %d dosya (ses1, ses2 ...)" % len(hazir))
     for i, s in enumerate(sahneler):
         metin = s["METIN"]
