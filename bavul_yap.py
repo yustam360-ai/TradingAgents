@@ -422,7 +422,13 @@ def anlatim_bol(dosya, metinler, gecici):
     diger_max = max(diger) if diger else 0.0
     print("   anlatim bolme noktalari (sn): %s" % ", ".join("%.1f" % x for x in kes))
     print("   sahne arasi en kisa sessizlik %.2f sn, cumle ici en uzun duraklama %.2f sn" % (sec_min, diger_max))
-    if diger and sec_min < diger_max * 1.25:
+    # sahne sureleri metin uzunluguyla orantili mi? (karakter basina sure birbirine yakinsa bolme dogrudur)
+    sinir0 = [0.0] + kes + [toplam]
+    hiz = [(sinir0[i + 1] - sinir0[i]) / uz[i] for i in range(n)]
+    hiz_ic = sorted(hiz[:-1]) if n > 2 else hiz              # son sahne (oylama ekrani) disarida
+    tutarli = hiz_ic[0] > 0 and hiz_ic[-1] / hiz_ic[0] <= 1.6
+    print("   sahne uzunluklari metinle uyumu: %s" % ("UYUMLU" if tutarli else "UYUMSUZ"))
+    if diger and sec_min < diger_max * 1.25 and not tutarli:
         raise RuntimeError(
             "Sahne aralari cumle ici duraklamalardan yeterince uzun degil; ses ile resim kayabilir, video YAPILMADI.\n"
             "   Cozum: metinde sahneler arasina '... ... ...' satiri koyup sesi tekrar olusturun "
@@ -735,9 +741,15 @@ def main():
         if not os.path.isdir(k):
             os.makedirs(k)
     hangi = sys.argv[1] if len(sys.argv) > 1 else None
-    klasorler = sorted(d for d in os.listdir(kok) if re.match(r"^bolum\d+$", d) and (hangi is None or d == "bolum" + hangi))
+    def bolum_no(d):
+        m = re.match(r"^\s*b[oö]l[uü]m\s*[-_ ]?\s*(\d+)\s*$", d, re.I)     # bolum2, Bolum 2, bölüm2 ...
+        return int(m.group(1)) if (m and os.path.isdir(os.path.join(kok, d))) else None
+    klasorler = sorted((d for d in os.listdir(kok) if bolum_no(d) is not None and (hangi is None or bolum_no(d) == int(hangi))),
+                       key=bolum_no)
     if not klasorler:
-        sys.exit("Bolum klasoru yok. Ornek: %s" % os.path.join(kok, "bolum1"))
+        var = [d for d in os.listdir(kok) if os.path.isdir(os.path.join(kok, d)) and d != "cikti"]
+        sys.exit("Bolum klasoru bulunamadi.\n  Aranan yer: %s\n  Orada bulunan klasorler: %s\n  Klasor adi 'bolum%s' olmali."
+                 % (kok, ", ".join(var) if var else "(hic yok)", hangi or "1"))
     for d in klasorler:
         try:
             bolum_yap(os.path.join(kok, d), cikti)
