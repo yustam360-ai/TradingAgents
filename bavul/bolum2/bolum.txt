@@ -1,0 +1,40 @@
+SERI: BAVUL
+BOLUM: 2
+BASLIK: BİLİNMEYEN NUMARA
+SES: tr-TR-AhmetNeural
+HIZ: +0%
+GOSTERGE: PARA=100.000.000 ₺ | TAKİP=%10 | EMRE GÜVEN=%90
+
+# Oylama yuzdelerini Instagram yorumlarina gore degistir (SAKLA=.. | PAYLAŞ=..)
+[OYLAMA sahne=1]
+SONUC: SAKLA=70 | PAYLAŞ=30
+METIN: Birinci bölümde siz seçtiniz: Sakla.
+
+[SAHNE sahne=1]
+METIN: Bavulu kalın çalıların altına sakladın. Etrafına baktın. Kimse yoktu.
+
+[SAHNE sahne=2]
+METIN: Emre'nin yanına döndün. Hiçbir şey olmamış gibi gülüyordun. Ama ellerin titriyordu.
+
+[SAHNE sahne=3]
+METIN: Gece yarısı, ormana tek başına geri döndün. Fenerini çalılara tuttun. Bavul yerindeydi.
+
+[SAHNE sahne=4]
+METIN: Eve geldin. Kapıyı kilitledin, perdeleri kapattın, bavulu yatağın altına ittin. Bitti, diye düşündün.
+
+[SAHNE sahne=5]
+METIN: Tam o sırada telefonun titredi. Bilinmeyen bir numara: Bavulu beğendin mi?
+GOSTERGE: TAKİP=%50
+
+[SAHNE sahne=6]
+METIN: Pencereye koştun. Aşağıda, yağmurun altında biri duruyordu. Doğrudan sana bakıyordu.
+
+[SAHNE sahne=7]
+METIN: İkinci mesaj geldi: Paranın yarısı senin. Diğer yarısını yarın sabah yedide, vereceğim adrese getir. Peki ama beni ormanda kim gördü?
+GOSTERGE: EMRE GÜVEN=%80
+
+[SECIM sahne=8]
+A: ANLAŞ | Yarısını bırak, 50 milyon senin kalsın
+B: HEPSİ BENİM | Paranın hepsi sende kalsın
+METIN: Şimdi karar senin. A: Yarısını bırak, elli milyon senin kalsın. B: Paranın hepsi sende kalsın. Yorumlara A ya da B yaz. En çok seçilenle devam ediyoruz.
+ALT: Yorumlara A ya da B yaz • En çok seçilenle devam ediyoruz
