@@ -1,22 +1,22 @@
 # -*- coding: utf-8 -*-
 """
-GOLDEN CROSS (9/26 EMA kesisimi + 100 EMA yon) - 2026 BASINDAN BUGUNE - BUTUN SEMBOLLER
+EMA CROSS (TradingView, 10/20 EMA kesisimi) - 2026 BASINDAN BUGUNE - BUTUN SEMBOLLER
 =====================================================================================
-Calistir:   py -3.8 C:\\Users\\User\\Desktop\\golden_cross_2026.py
+Calistir:   py -3.8 C:\\Users\\User\\Desktop\\ema_cross_2026.py
 Gerekli:    py -3.8 -m pip install MetaTrader5 pandas numpy
-Sadece bazi semboller:   py -3.8 golden_cross_2026.py --sembol XAUUSD,EURUSD
+Sadece bazi semboller:   py -3.8 ema_cross_2026.py --sembol XAUUSD,EURUSD
 MT5 acik olmali. SADECE gecmis veri okur, ISLEM ACMAZ.
-Sonuclar MASAUSTUNE:  Masaustu\\golden_cross_2026_<tarih>\\0_OZET.txt (kisa) , 1_semboller.csv
+Sonuclar MASAUSTUNE:  Masaustu\\ema_cross_2026_<tarih>\\0_OZET.txt (kisa) , 1_semboller.csv
 
 1 OCAK 2026'da 10.000 $ ile baslasaydi. (2025 sonu verisi sadece EMA'larin isinmasi icin.)
 MANTIK (LONG; SHORT tersi)
-  9 EMA, 26 EMA'yi yukari keser VE mum 100 EMA'nin ustunde kapanir -> kesisim mumu KAPANINCA,
-  bir sonraki mumun acilisinda LONG.
+  10 EMA, 20 EMA'yi yukari keser -> kesisim mumu KAPANINCA, bir sonraki mumun acilisinda LONG.
+  (TradingView "EMA Cross Strategy" kodundaki kesisim. Yon filtresi YOK.)
 ZAMAN DILIMI: 15 DK / 1 SAAT / 4 SAAT
 STOP / HEDEF (ATR = 14 mumluk ortalama mum boyu)
   A : stop 1 ATR , hedef 2 ATR  (1:2)
   B : stop 1 ATR , hedef 3 ATR  (1:3)
-  C : stop 2 ATR , hedef YOK - ters kesisimde (9 EMA 26'yi tersine kesince) cikis
+  C : stop 2 ATR , hedef YOK - ters kesisimde (10 EMA 20'yi tersine kesince) cikis
 RISK: islem basina 100 $ (10.000 $'in %1'i).  Spread maliyeti 6 $'i gecen islem acilmaz; spread dahil.
 Ayni stop mumunda hem stop hem hedef olursa STOP sayilir.  Acik kalan islem sayilmaz.
 """
@@ -79,19 +79,19 @@ def test(df, point, sinir):
     o, h, l, c = (df[k].values.astype(float) for k in ("open", "high", "low", "close"))
     sp = df["spread"].values.astype(float) * point
     s = pd.Series(c)
-    e9, e26, e100 = (s.ewm(span=n, adjust=False).mean().values for n in (9, 26, 100))
+    e10, e20 = (s.ewm(span=n, adjust=False).mean().values for n in (10, 20))
     pc = np.r_[c[0], c[:-1]]
     atr = pd.Series(np.maximum(h - l, np.maximum(np.abs(h - pc), np.abs(l - pc)))).rolling(14).mean().values
-    d = e9 - e26
+    d = e10 - e20
     dp = np.r_[0.0, d[:-1]]
     yuk = (d > 0) & (dp <= 0)
     asa = (d < 0) & (dp >= 0)
     n = len(c)
     kes_idx = np.nonzero(yuk | asa)[0]
     sonuc = {k: [] for k in SIKLAR}
-    for i in np.nonzero((yuk & (c > e100)) | (asa & (c < e100)))[0]:
+    for i in np.nonzero(yuk | asa)[0]:
         j = i + 1
-        if i < 110 or j >= n or T[j] < sinir or not atr[i] > 0:
+        if i < 40 or j >= n or T[j] < sinir or not atr[i] > 0:
             continue
         y = 1 if yuk[i] else -1
         e = o[j] + (sp[j] if y > 0 else 0.0)            # long ASK, short BID
@@ -177,10 +177,10 @@ def main():
             print("%3d/%d %-12s HATA: %s" % (no, len(liste), sb, ex))
     mt5.shutdown()
 
-    klasor = os.path.join(masaustu(), "golden_cross_2026_" + datetime.now().strftime("%Y%m%d_%H%M"))
+    klasor = os.path.join(masaustu(), "ema_cross_2026_" + datetime.now().strftime("%Y%m%d_%H%M"))
     os.makedirs(klasor, exist_ok=True)
     S = pd.DataFrame(S)
-    sat = ["GOLDEN CROSS 9/26 + 100 EMA  |  1 Ocak 2026 - %s  |  10.000 $, islem basi 100 $ risk"
+    sat = ["EMA CROSS 10/20 (TradingView)  |  1 Ocak 2026 - %s  |  10.000 $, islem basi 100 $ risk"
            % datetime.now().strftime("%d.%m.%Y"),
            "A: stop 1 ATR hedef 2 ATR   B: stop 1 ATR hedef 3 ATR   C: stop 2 ATR, ters kesisimde cikis",
            "Basabas basari: A %%33, B %%25, C degisken.   Sure %.0f dk" % ((time.time() - t0) / 60.0)]
