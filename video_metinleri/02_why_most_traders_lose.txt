@@ -1,0 +1,51 @@
+TITLE: Why Most Traders Lose Money (What the Research Actually Shows)
+DESCRIPTION: You've probably heard that "90% of traders lose money." But is it true? In this video we look at what real research and broker data say about retail traders, and at the main reasons most of them lose: costs, leverage, overtrading, emotions, and the lack of a real edge. We also cover what the small group of consistent traders does differently.\n\nThis video is for educational purposes only and is not financial advice. Trading involves a high risk of losing money.
+TAGS: why traders lose money, day trading, trading psychology, forex trading, trading statistics, retail traders, risk management, overtrading, loss aversion, stock market
+
+[VISUAL: trader; trading screen; stock chart]
+You've probably heard it before: "ninety percent of traders lose money." It's repeated so often that it sounds like a law of nature. But is it actually true? And if it is, why? Every day, millions of people open trading apps convinced they can beat the market. Most of them are smart, hardworking people. Yet the numbers are brutal. In this video, we'll look at what the research actually says, and the real reasons why most traders end up losing.
+
+[VISUAL: data; spreadsheet; computer screen]
+Let's start with the evidence, because there is a lot of it. In Europe, brokers that offer leveraged products called CFDs are required by regulators to publish what percentage of their retail clients lose money. If you visit almost any of these websites, you'll see the warning: typically somewhere between seventy and eighty percent of retail accounts lose money, and at some brokers the figure is even higher. These aren't estimates from critics. They are the brokers' own numbers.
+
+[VISUAL: research; university; books]
+Academic studies tell a similar story. One well-known study from Brazil followed every individual who started day trading futures over several years. Among the people who kept day trading for more than three hundred days, about ninety-seven percent lost money. Only around one percent earned more than the minimum wage. Another large study from Taiwan, which had complete data on every trade in the market, found that less than one percent of day traders were able to earn consistent profits year after year.
+
+[VISUAL: family; home; savings]
+And it's not only day traders. In a famous study of tens of thousands of American households, researchers Brad Barber and Terrance Odean found that the investors who traded the most earned the lowest returns. Over the period they studied, the most active traders earned about eleven point four percent per year, while the overall market returned about seventeen point nine percent. Their paper had a very clear title: "Trading Is Hazardous to Your Wealth." So the exact number depends on the market and the time period, but the overall picture is consistent. Most active traders lose money, and very few win consistently. Now let's look at why.
+
+[VISUAL: coins; money; calculator]
+Reason number one: costs. Every trade has a cost. There's the spread, the difference between the buying price and the selling price. There are commissions, and for leveraged positions held overnight, there are financing fees. One trade's cost looks tiny. But a trader who makes several trades a day pays these costs hundreds or thousands of times a year. Think of it this way: before you make a single cent of profit, you have to beat the market and the costs. Even a trader with a small real advantage can see that advantage eaten away completely by trading too often.
+
+[VISUAL: casino; dice; gambling]
+Reason number two: trading is a competition. When you buy, someone else is selling to you. And on the other side of your trade there are often professionals: banks, hedge funds, and high-frequency trading firms with better data, faster technology, lower costs, and teams of analysts. Before costs, trading is close to a zero-sum game. After costs, it's a negative-sum game. For one trader to win, someone else usually has to lose, and the house always takes its share.
+
+[VISUAL: rocket; speed; risk]
+Reason number three: leverage. Many trading products let you control a large position with a small amount of money. With leverage of thirty to one, a move of just over three percent against you can wipe out your entire deposit. Leverage makes good trades look exciting, but it makes bad trades catastrophic. And because markets regularly make sudden moves, especially around news events, highly leveraged traders often get knocked out before they ever get a chance to be right.
+
+[VISUAL: man thinking; stress; worry]
+Reason number four is psychology, and this one may be the most important. Researchers have found that people feel the pain of a loss roughly twice as strongly as the pleasure of an equal gain. This is called loss aversion. In trading, it creates a very destructive habit. When a trade is winning, traders are afraid of losing the profit, so they close it early. When a trade is losing, they can't accept the loss, so they hold on and hope it comes back. The result is small wins and big losses. Economists even have a name for this pattern: the disposition effect.
+
+[VISUAL: angry; frustration; computer]
+Then there's revenge trading. After a painful loss, many traders immediately jump back into the market, often with a bigger position, trying to win the money back quickly. This is when the biggest losses usually happen. Decisions are made in anger or panic instead of following a plan. One bad day turns into a disaster.
+
+[VISUAL: confident businessman; success; luxury car]
+Reason number five: overconfidence. A few winning trades can convince someone that they've figured out the market. But in the short term, results are mostly luck. A trader might win seven out of ten trades by chance and believe it's skill, then increase their position size just before the luck runs out. Studies show that overconfident investors trade more, and as we saw earlier, the people who trade the most tend to earn the least.
+
+[VISUAL: social media; smartphone; video]
+Reason number six: no real edge. To make money consistently, a trader needs an edge: a method that, over hundreds of trades, makes more than it loses after all costs. Most people never test whether their method actually has one. They follow tips, social media posts, or indicators that look convincing on a few hand-picked examples on a chart. Remember survivorship bias as well. You see the few people who won big and post their results. You don't see the thousands who quietly lost and stopped posting.
+
+[VISUAL: shield; protection; safety]
+Reason number seven: poor risk management. Many beginners risk a large part of their account on a single trade, or trade without a stop loss at all. Even a good strategy loses sometimes, and losing streaks are normal. If you risk twenty percent of your account per trade, five losses in a row can end your trading career. If you risk one percent, the same streak barely matters.
+
+[VISUAL: chess; strategy; planning]
+So what does the small group of consistent traders do differently? First, they treat trading like a business, not a game. They have a clearly defined strategy, and they've tested it on a large amount of historical data, including realistic costs. Second, they risk a small, fixed amount on every trade, often one percent of their account or less, so that no single trade can hurt them badly. Third, they set daily and weekly loss limits, and when the limit is hit, they stop. Fourth, they keep records of every trade and review them honestly. And fifth, they trade less, not more. They wait for situations where their edge is strongest.
+
+[VISUAL: notebook; writing; journal]
+Many successful traders also automate parts of their process, using rules or algorithms, precisely to remove emotions from their decisions. When the rules are written down in advance, there's less room for fear, greed, and revenge.
+
+[VISUAL: long term investing; growth; nature]
+There's one more important point. For most people, the best way to build wealth in the stock market isn't active trading at all. Research consistently shows that simply buying a broad, low-cost index fund and holding it for many years has beaten the majority of active traders and even most professional fund managers over the long run. It's not exciting. But boring often works.
+
+[VISUAL: sunset; road; journey]
+So, do ninety percent of traders lose money? The exact number varies, but the research is clear: the large majority of active traders lose, and only a very small minority win consistently. The reasons aren't mysterious. Costs, competition, leverage, emotions, overconfidence, the lack of a tested edge, and poor risk management. If you decide to trade anyway, understanding these traps is the first step to avoiding them. If this video was useful, subscribe for more clear explanations about money and markets. Thanks for watching.
