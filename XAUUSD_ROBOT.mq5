@@ -374,6 +374,7 @@ void Panel()
    GunVerisi(GunBasi(TimeCurrent()), TimeCurrent() + 60, ad, ka, za, kz);
    double ak = AcikKZ();
    ulong b; int p = Pozisyon(b);
+   Arka(170);                                   // once arka plan, yazilar ustte kalsin
    int y = 25;
    Yazi("0", "🥇 XAUUSD ROBOT", y, 14, clrDarkGoldenrod); y += 26;
    Yazi("1", "Range Breakout: " + AralikBasla + "–" + AralikBit + " aralık, " + KapanisSaati + " kapanış", y, 9, clrBlack); y += 18;
@@ -388,7 +389,6 @@ void Panel()
         (kz + ak) >= 0 ? clrGreen : clrRed); y += 22;
    Yazi("tg", "Telegram: " + (TelegramAcik ? (tgDurum == "" ? "hazır" : tgDurum) : "kapalı"), y, 8, clrGray);
    y += 18;
-   Arka(y - 10);
 }
 
 //+------------------------------------------------------------------+

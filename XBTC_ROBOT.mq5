@@ -440,6 +440,7 @@ void Panel()
    double top = AcikKZ("");
    int topI = 0;
    for(int k = 0; k < ArraySize(kz); k++) { top += kz[k]; topI += ac[k]; }
+   Arka(150 + 18 * ArraySize(S));                                   // once arka plan, yazilar ustte kalsin
    int y = 25;
    Yazi("0", "XBTC ROBOT", y, 14, clrNavy); y += 26;
    Yazi("1", "9/26 EMA kesişim + 100 EMA yön | 15 dk", y, 9, clrBlack); y += 18;
@@ -459,7 +460,6 @@ void Panel()
    }
    Yazi("tg", "Telegram: " + (TelegramAcik ? (tgDurum == "" ? "hazır" : tgDurum) : "kapalı"), y, 8, clrGray);
    y += 18;
-   Arka(y - 10);
 }
 
 //+------------------------------------------------------------------+
