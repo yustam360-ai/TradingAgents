@@ -240,26 +240,30 @@ void Kapat(int i)
 //--- stop olursa zarar = Risk olacak lot. Cok kucukse 0 doner (islem yok).
 double LotHesap(int i, bool al, double giris, double stop)
 {
-   double kz = 0.0;
-   ENUM_ORDER_TYPE ot = al ? ORDER_TYPE_BUY : ORDER_TYPE_SELL;
-   if(!OrderCalcProfit(ot, S[i], 1.0, giris, stop, kz) || kz >= 0.0)
+   //--- 1 lotta stop olursa kac $ kaybedilir:  stop mesafesi x kontrat buyuklugu
+   //    (XAUUSD 1 lot = 100 ons, BTCUSD 1 lot = 1 BTC; ikisi de USD, hesap USD)
+   double kontrat = SymbolInfoDouble(S[i], SYMBOL_TRADE_CONTRACT_SIZE);
+   double kz = MathAbs(giris - stop) * kontrat;
+   if(SymbolInfoString(S[i], SYMBOL_CURRENCY_PROFIT) != AccountInfoString(ACCOUNT_CURRENCY) || kz <= 0.0)
    {
-      double tv = SymbolInfoDouble(S[i], SYMBOL_TRADE_TICK_VALUE);
-      double ts = SymbolInfoDouble(S[i], SYMBOL_TRADE_TICK_SIZE);
-      if(tv <= 0.0 || ts <= 0.0) return(0.0);
-      kz = -MathAbs(giris - stop) / ts * tv;
+      double x = 0.0;
+      ENUM_ORDER_TYPE ot = al ? ORDER_TYPE_BUY : ORDER_TYPE_SELL;
+      if(OrderCalcProfit(ot, S[i], 1.0, giris, stop, x)) kz = MathAbs(x);
    }
-   if(kz >= 0.0) return(0.0);
-   double lot = Risk / MathAbs(kz);
+   if(kz <= 0.0) return(0.0);
+   double ham = Risk / kz;
    double adim = SymbolInfoDouble(S[i], SYMBOL_VOLUME_STEP);
    double enAz = SymbolInfoDouble(S[i], SYMBOL_VOLUME_MIN);
    double enUst = SymbolInfoDouble(S[i], SYMBOL_VOLUME_MAX);
    if(adim <= 0.0) adim = 0.01;
-   lot = MathFloor(lot / adim + 1e-9) * adim;
+   double lot = MathRound(ham / adim) * adim;         // en yakin lot adimi: zarar Risk'e en yakin
+   int bas = (int)MathMax(0.0, MathCeil(-MathLog10(adim) - 1e-9));
+   lot = NormalizeDouble(lot, bas);
+   PrintFormat("%s lot: giris %.2f stop %.2f mesafe %.2f kontrat %.0f -> 1 lotta zarar %.2f $ -> lot %.4f -> %.2f (stop olursa ~%.0f $)",
+               S[i], giris, stop, MathAbs(giris - stop), kontrat, kz, ham, lot, lot * kz);
    if(lot < enAz - 1e-9) return(0.0);
    if(lot > enUst) lot = enUst;
-   int bas = (int)MathMax(0.0, MathCeil(-MathLog10(adim) - 1e-9));
-   return(NormalizeDouble(lot, bas));
+   return(lot);
 }
 
 double StopFiyat(int i, bool al, double giris)
